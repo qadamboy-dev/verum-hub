@@ -16,12 +16,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current state (2026-11-13)
 
-- First commit, local only: no remote and no Vercel project yet. Nothing here is live; verum.cam still serves the messenger.
+- **Git:** `master` = `origin/master` on https://github.com/qadamboy-dev/verum-hub (pushed on 2026-11-13; `master` is the default branch). No Vercel project yet: nothing here is live, and verum.cam still serves the messenger.
 - `yarn test`: 229 tests in 10 files, the real build included. `yarn build` passes its own dist/ checks. `yarn audit`: 0 vulnerabilities (118 packages).
 - Looked at in Chromium under the real headers (a local server that sends vercel.json's CSP): no CSP or Trusted Types violation; EN, RU and UZ; /privacy#delete-account landing in the shown document; 375 px without horizontal scroll; 404.
 
 **Before verum.cam points here** (the owner's steps, in this order):
-1. A GitHub repo and a Vercel project for this folder (vercel.json carries the install, build and output settings). Domains: `verum.cam`, plus `www.verum.cam` (vercel.json redirects it to the apex; today www answers Cloudflare 526).
+1. A Vercel project imported from the GitHub repo (vercel.json carries the install, build and output settings). Domains: `verum.cam`, plus `www.verum.cam` (vercel.json redirects it to the apex; today www answers Cloudflare 526).
 2. The messenger's Vercel project gets `chat.verum.cam` (DNS at Cloudflare), and keeps verum.cam until step 4.
 3. On the backend, `yarn r2:init-cors` against the real bucket, or uploads from chat.verum.cam are refused.
 4. Move verum.cam (and www) from the messenger's project to this one.
