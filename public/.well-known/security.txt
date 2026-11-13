@@ -1,0 +1,11 @@
+# Verum (verum.cam): how to report a security vulnerability. Covers the whole
+# ecosystem: verum.cam, chat.verum.cam, notes.verum.cam, api.verum.cam and the
+# Android app. Format: RFC 9116. Disclosure policy: https://verum.cam/terms#security
+# ("Reporting security vulnerabilities" in the Terms of Service). Renew Expires before it passes.
+Contact: mailto:support@verum.cam
+Expires: 2027-11-01T00:00:00.000Z
+Preferred-Languages: en, ru, uz
+Canonical: https://verum.cam/.well-known/security.txt
+Canonical: https://chat.verum.cam/.well-known/security.txt
+Policy: https://verum.cam/terms#security
+Policy: https://verum.cam/privacy.html

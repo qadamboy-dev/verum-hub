@@ -1,0 +1,83 @@
+/* ════════════════════════════════════════════════════════════
+   TOKENS — the messenger's dark theme (e2ee-chat-frontend
+   styles/global.css, [data-theme="dark"] plus the shared :root
+   values), the only theme verum.cam has. Copied value for value so
+   the hub and the messenger read as one product; change them there
+   first. Status colours are left out on purpose: the hub is
+   monochrome (no green, no neon).
+════════════════════════════════════════════════════════════ */
+:root {
+  color-scheme: dark;
+
+  --bg-0:          #18181b;
+  --bg-1:          #1f1f23;
+  --bg-2:          #27272a;
+  --bg-3:          #3f3f46;
+  --border:        #3f3f46;
+  --border-bright: #52525b;
+
+  --text-0: #fafafa;
+  --text-1: #acacb4;
+  --text-2: #8f8f96;
+
+  --accent:     #e4e4e7;
+  --accent-dim: #27272a;
+  --on-accent:  #18181b;
+
+  --font-sans:  'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:  'DM Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --font-serif: 'Marcellus', 'Cormorant Garamond', Georgia, serif; /* VERUM wordmark */
+
+  --radius-sm:   6px;
+  --radius:      8px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+  --radius-pill: 999px;
+
+  /* Spacing — an 8px grid with 4px half-steps */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  --transition:      0.15s ease;
+  --transition-slow: 0.3s ease;
+  --spring:          cubic-bezier(0.16, 1, 0.3, 1);
+  --press-scale:     scale(0.97);
+
+  /* Glass — the nav and the cards */
+  --glass-bg:     rgba(24, 24, 27, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.07);
+  --glass-blur:   saturate(180%) blur(20px);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.55);
+
+  /* The one backdrop light: --text-0 at a whisper, in place of the
+     messenger's blue and green glows */
+  --glow: rgba(250, 250, 250, 0.055);
+
+  --z-header: 50;
+  --nav-height: 57px;
+
+  --safe-top:    env(safe-area-inset-top,    0px);
+  --safe-right:  env(safe-area-inset-right,  0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left:   env(safe-area-inset-left,   0px);
+}
+
+/* Glass without blur (Firefox before 103, old WebViews) or for people who
+   asked for less transparency: the solid surface instead */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root { --glass-bg: var(--bg-0); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  :root { --glass-bg: var(--bg-0); }
+}

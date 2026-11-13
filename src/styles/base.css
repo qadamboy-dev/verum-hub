@@ -1,0 +1,88 @@
+/* ── Reset ─────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  background: var(--bg-1);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* anchors land below the sticky nav */
+  scroll-padding-top: calc(var(--nav-height) + var(--space-4));
+}
+body {
+  min-height: 100vh;
+  background: var(--bg-1);
+  color: var(--text-0);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+a { color: inherit; }
+ul, ol { list-style: none; }
+button { font: inherit; color: inherit; cursor: pointer; border: none; background: none; }
+code { font-family: var(--font-mono); }
+.icon { flex: none; display: inline-block; vertical-align: middle; }
+
+* { -webkit-tap-highlight-color: transparent; }
+a, button { touch-action: manipulation; }
+
+/* ── Languages ─────────────────────────────────────────────── */
+/* Every text exists once per language (src/render/html.js t()); <html
+   data-lang> picks one. public/hub.js sets it before the body paints, and
+   the static HTML says "en", so a page without JS reads in English. */
+html[data-lang="en"] .l:not([lang="en"]),
+html[data-lang="ru"] .l:not([lang="ru"]),
+html[data-lang="uz"] .l:not([lang="uz"]) { display: none !important; }
+
+/* The legal documents exist in RU and EN: Uzbek reads the Russian one */
+html[data-lang="en"] .l-doc:not([lang="en"]),
+html[data-lang="ru"] .l-doc:not([lang="ru"]),
+html[data-lang="uz"] .l-doc:not([lang="ru"]) { display: none !important; }
+
+/* ── Focus (keyboard and D-pad) ────────────────────────────── */
+:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+:focus:not(:focus-visible) { outline: none; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 100;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transform: translateY(-200%);
+  transition: transform var(--transition);
+}
+.skip-link:focus { transform: translateY(0); }
+
+@keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  /* A tap still answers: the press scale is feedback, not motion */
+  a, button { transition-duration: 0.14s !important; }
+}
