@@ -266,11 +266,39 @@ describe.each(['ru', 'en'])('the ecosystem the documents cover (%s)', (lang) => 
     }
   });
 
-  test('Verum Notes is not described as open, and no data practice is claimed for it', () => {
-    expect(flat(c.privacy.intro)).toMatch(/ещё не открыт и данных не обрабатывает|not open yet and processes no data/);
-    // nothing past the intro speaks for Notes before its own section exists
-    expect(flat(c.privacy.sections)).not.toContain('Notes');
-    expect(flat(c.terms.sections)).not.toContain('Notes');
+  test('Verum Notes has its own section: what the server keeps (encrypted data only), what stays in the browser, what a reset means', () => {
+    expect(flat(c.privacy.intro)).not.toMatch(/ещё не открыт|not open yet/);
+    const notes = flat(section(lang, 'privacy', 'verum-notes'));
+    // the same account and the same sign-in, the password included
+    expect(notes).toMatch(/Verum Chat/);
+    expect(notes).toMatch(/HTTPS/);
+    expect(notes).toMatch(/не меняет ни ваши ключи|never changes your keys/);
+    // encryption on the device, a key derived from the account's private key
+    expect(notes).toContain('AES-256-GCM');
+    expect(notes).toContain('HKDF');
+    // exactly the fields NoteItem keeps (e2ee-chat-backend src/models/NoteItem.js)
+    expect(notes).toMatch(/вектор инициализации|initialisation vector/);
+    expect(notes).toMatch(/номер версии|version number/);
+    expect(notes).toMatch(/отметку об удалении|whether it was deleted/);
+    // the metadata the server does see, said plainly
+    expect(notes).toMatch(/сколько у вас заметок|how many notes/);
+    expect(notes).toMatch(/2000|2,000/);
+    // the browser's copy, and a reset
+    expect(notes).toContain('IndexedDB');
+    expect(notes).toMatch(/прежний ключ|previous key/);
+    // no claim beyond the code
+    expect(notes).not.toMatch(/never sees your password|не видит ваш пароль|no analytics|без аналитики/i);
+  });
+
+  test('the account deletion and the retention lists cover the notes', () => {
+    expect(flat(section(lang, 'privacy', 'delete-account'))).toMatch(/заметки и папки Verum Notes|Verum Notes notes and folders/);
+    expect(flat(section(lang, 'privacy', 'retention'))).toMatch(/Verum Notes/);
+    expect(flat(section(lang, 'privacy', 'subprocessors'))).toContain('notes.verum.cam');
+  });
+
+  test('the Terms name Verum Notes as part of the Service, and what a reset means for it', () => {
+    expect(flat(section(lang, 'terms', 'service'))).toContain('Verum Notes');
+    expect(flat(section(lang, 'terms', 'password-and-keys'))).toContain('Verum Notes');
   });
 
   test('the hosts and the /r2 relays of both sites are named', () => {

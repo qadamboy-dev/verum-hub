@@ -92,14 +92,18 @@ describe.each(LANGS)('site.js — what the copy claims (%s)', (lang) => {
     expect(trackers).toMatch(/tracker|трекер|treker/i);
   });
 
-  test('both products are there, Chat live and Notes not yet open', () => {
+  test('both products are live: Chat, and Notes on the same account with notes encrypted on the device', () => {
     expect(c.products.live).toBe('Live');
-    expect(c.products.soon).toMatch(/Beta|Бета/);
+    expect(c.products).not.toHaveProperty('soon');
     expect(c.products.chat.text).toMatch(/video|видео/i);
     expect(c.products.notes.text).toContain('Obsidian');
     expect(c.products.notes.text).toContain('Markdown');
     expect(c.products.notes.text).toContain('[[');
-    expect(c.products.notes.status).toContain('notes.verum.cam');
+    expect(c.products.notes.status).toMatch(/Verum/);
+    expect(c.products.notes.status).toMatch(/device|устройств|qurilma/i);
+    expect(c.products.notes.status).toMatch(/encrypted|зашифрованн|shifrlangan/i);
+    expect(c.products.notes.open).toMatch(/Verum Notes/);
+    expect(c.products.notes.status).not.toMatch(/development|разработке|Ishlab/i);
   });
 
   test('the Verum Audio exception is stated, and the metadata the server sees', () => {

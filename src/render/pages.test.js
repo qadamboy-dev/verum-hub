@@ -66,15 +66,20 @@ describe('the hub (index.html)', () => {
     for (const feature of ['calls', 'Video notes', 'Live Locator']) expect(card.textContent).toContain(feature);
   });
 
-  test('Verum Notes: Beta / Soon, leads to notes.verum.cam, says it is not open', () => {
+  test('Verum Notes: live, "Open Verum Notes" leads to notes.verum.cam, notes encrypted on the device', () => {
     const card = q('[aria-labelledby="notes-title"]');
     expect(card.querySelector('h3').textContent).toBe('Verum Notes');
     expect(card.querySelector('.hub-product-host').textContent).toBe('notes.verum.cam');
-    expect(visibleText(document, card.querySelector('.hub-status'))).toBe('Beta / Soon');
-    expect(card.querySelector('[data-product="notes"]').getAttribute('href')).toBe(NOTES_URL);
+    expect(visibleText(document, card.querySelector('.hub-status'))).toBe('Live');
+    expect(card.querySelector('.hub-status--live')).not.toBeNull();
+    const open = card.querySelector('[data-product="notes"]');
+    expect(open.getAttribute('href')).toBe(NOTES_URL);
+    expect(open.classList.contains('btn-primary')).toBe(true);
+    expect(visibleText(document, open)).toBe('Open Verum Notes');
     const text = visibleText(document, card);
     for (const feature of ['Folder tree', '[[links]]', 'graph', 'Tags', 'checkboxes', 'Obsidian']) expect(text).toContain(feature);
-    expect(text).toMatch(/In development/);
+    expect(text).toMatch(/encrypted on your device/);
+    expect(text).not.toMatch(/In development|Soon/);
   });
 
   test('security: four steps, the real algorithms, the bot exception', () => {
@@ -185,15 +190,15 @@ describe('<head>', () => {
       expect(alternates.map(([lang]) => lang)).toContain('x-default');
       const ld = JSON.parse(d.querySelector('script[type="application/ld+json"]').textContent);
       expect(ld['@graph'].map(n => n['@type'])).toEqual(page === 'home'
-        ? ['Organization', 'WebSite', 'SoftwareApplication']
+        ? ['Organization', 'WebSite', 'SoftwareApplication', 'SoftwareApplication']
         : ['Organization', 'WebSite', 'WebPage']);
       expect(d.querySelector('meta[name="robots"]').getAttribute('content')).toMatch(/^index, follow/);
     });
 
-  test('the app in the structured data is Verum Chat on chat.verum.cam', () => {
+  test('the apps in the structured data: Verum Chat on chat.verum.cam, Verum Notes on notes.verum.cam', () => {
     const ld = JSON.parse(head('home').querySelector('script[type="application/ld+json"]').textContent);
-    const app = ld['@graph'][2];
-    expect(app).toMatchObject({ name: 'Verum Chat', url: CHAT_URL, applicationCategory: 'CommunicationApplication' });
+    expect(ld['@graph'][2]).toMatchObject({ name: 'Verum Chat', url: CHAT_URL, applicationCategory: 'CommunicationApplication' });
+    expect(ld['@graph'][3]).toMatchObject({ '@id': `${NOTES_URL}#app`, name: 'Verum Notes', url: NOTES_URL, applicationCategory: 'ProductivityApplication', operatingSystem: 'Web' });
   });
 
   test('a title per language for public/hub.js; the 404 is not indexed', () => {

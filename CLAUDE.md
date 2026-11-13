@@ -10,14 +10,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 |---|---|---|
 | `verum.cam` | `verum-hub` (this one) | the hub |
 | `chat.verum.cam` | `../e2ee-chat-frontend` | Verum Chat, the messenger (until the domains are switched it still answers on verum.cam) |
-| `notes.verum.cam` | `verum-notes` (next) | Verum Notes, an E2EE Markdown knowledge base; not open |
+| `notes.verum.cam` | `../verum-notes` | Verum Notes, the E2EE Markdown vault (notes, [[links]], graph, tasks); its sync is the API's `/api/notes` |
 | `api.verum.cam` | `../e2ee-chat-backend` | the API; its CORS list pins all of the above (`src/config/origins.js`) |
 | `admin.verum.cam` | `../verum-admin-web` | the staff console |
 
 ## Current state (2026-11-13)
 
 - **Git:** `master` = `origin/master` on https://github.com/qadamboy-dev/verum-hub (pushed on 2026-11-13; `master` is the default branch). No Vercel project yet: nothing here is live, and verum.cam still serves the messenger.
-- `yarn test`: 229 tests in 10 files, the real build included. `yarn build` passes its own dist/ checks. `yarn audit`: 0 vulnerabilities (118 packages).
+- **2026-11-13, ecosystem stage 2:** the Verum Notes card is live ("Open Verum Notes", `btn-primary`, the zero-knowledge line as its note), the home page's JSON-LD has a second `SoftwareApplication` (Verum Notes, `ProductivityApplication`, Web), and the Privacy Policy has a Verum Notes section (below). The `soon` label and its style are gone: no product is "coming" any more.
+- `yarn test`: 233 tests in 10 files, the real build included. `yarn build` passes its own dist/ checks. `yarn audit`: 0 vulnerabilities (118 packages).
 - Looked at in Chromium under the real headers (a local server that sends vercel.json's CSP): no CSP or Trusted Types violation; EN, RU and UZ; /privacy#delete-account landing in the shown document; 375 px without horizontal scroll; 404.
 
 **Before verum.cam points here** (the owner's steps, in this order):
@@ -56,8 +57,8 @@ yarn test       # vitest: content, pages, vercel.json, public/, hub.js, sw.js, c
 
 ## The legal documents (privacy.html, terms.html)
 
-- `legalContent.js` is the messenger's text (e2ee-chat-frontend `src/pages/legalContent.js` at e1135de, approved by the owner on 2026-11-12) widened on 2026-11-13 for the ecosystem: the intros and descriptions name verum.cam, chat.verum.cam and the Android app, say that Verum Notes is not open and processes nothing yet, the Terms define the Service as the ecosystem, and the Vercel / Cloudflare lines name the new hosts. **The owner has not read the widened text yet.** Everything else is word for word, and `legalContent.test.js` is the messenger's test plus the ecosystem's checks.
-- Two copies now exist. When one changes, change the other (or link the messenger's pages here) and keep `LEGAL_UPDATED` and the sitemap's `lastmod` equal (tested). Before Verum Notes opens, the Privacy Policy needs its section.
+- `legalContent.js` is the messenger's text (e2ee-chat-frontend `src/pages/legalContent.js` at e1135de, approved by the owner on 2026-11-12) widened on 2026-11-13 for the ecosystem: the intros and descriptions name verum.cam, chat.verum.cam and the Android app, the Terms define the Service as the ecosystem, and the Vercel / Cloudflare lines name the new hosts. Stage 2 (the same day) added Verum Notes: a Privacy section of its own (`verum-notes`: the sign-in, AES-256-GCM under an HKDF key from the account's private key, exactly the fields the server keeps per item, the metadata it sees, the browser's copy, deletion, the 2,000 limit, what a password reset means), lines in Retention and Deleting your account, notes.verum.cam in the Vercel line, and Verum Notes in the Terms' Service and keys sections. **The owner has read neither the widened text nor the Notes section yet.** Everything else is word for word, and `legalContent.test.js` is the messenger's test plus the ecosystem's checks.
+- Two copies now exist. When one changes, change the other (or link the messenger's pages here) and keep `LEGAL_UPDATED` and the sitemap's `lastmod` equal (tested). The Notes section must match `../verum-notes` (its CLAUDE.md) and the backend's `NoteItem`: change it with them. The messenger's own copy of the documents does not have it.
 - Both languages are in each page (`article.l-doc`); Uzbek reads the Russian one, with a note. Section ids are link targets and must never change: `/privacy#delete-account` is the account-deletion URL in Google Play, `/terms#security` the Policy of security.txt. Only the shown document carries them (`hub.js`); without JS, the English one.
 - Canonical URLs are `https://verum.cam/privacy` and `/terms` (the messenger's, kept); the footer links `/privacy.html` and `/terms.html`, and vercel.json rewrites the short paths to them.
 

@@ -5,8 +5,11 @@
  * Copied from e2ee-chat-frontend's src/pages/legalContent.js (2026-11-12,
  * e1135de, the text the owner approved) and widened on 2026-11-13 to cover
  * the ecosystem: the intros and descriptions name verum.cam, chat.verum.cam
- * and the Android app, say that Verum Notes is not open yet, and the Vercel
- * and Cloudflare lines name the new hosts. Everything else is word for word,
+ * and the Android app, and the Vercel and Cloudflare lines name the new
+ * hosts. Ecosystem stage 2 (also 2026-11-13) added Verum Notes: its own
+ * Privacy section (id verum-notes), lines in Retention and Deleting your
+ * account, the Vercel line, and the Terms' Service and keys sections.
+ * Everything else is word for word,
  * so the two copies can be compared: change the messenger's copy with this
  * one (or link the messenger to these pages) and keep both dated.
  *
@@ -84,7 +87,7 @@ export const LEGAL_COPY = {
         'Аккаунт можно удалить в любой момент — в настройках или письмом.',
       ],
       intro: [
-        'Эта политика объясняет, какие данные обрабатывает Verum, зачем и где, и чего мы видеть не можем. Она охватывает экосистему Verum, которая работает на одном аккаунте Verum: сайт verum.cam, мессенджер Verum Chat на chat.verum.cam (веб-приложение) и приложение для Android. Verum Notes (notes.verum.cam) ещё не открыт и данных не обрабатывает; до его запуска мы дополним эту политику. «Verum», «мы» — разработчик Verum, который отвечает за обработку ваших данных; «вы» — любой, кто пользуется этими сайтами и приложениями. Если к вам применяются Общий регламент ЕС по защите данных (GDPR) или Закон Республики Узбекистан «О персональных данных» № ЗРУ-547, у вас есть права, описанные в разделе «Ваши права».',
+        'Эта политика объясняет, какие данные обрабатывает Verum, зачем и где, и чего мы видеть не можем. Она охватывает экосистему Verum, которая работает на одном аккаунте Verum: сайт verum.cam, мессенджер Verum Chat на chat.verum.cam (веб-приложение) и приложение для Android. Она же охватывает Verum Notes — зашифрованные заметки и задачи на notes.verum.cam (раздел «Verum Notes»). «Verum», «мы» — разработчик Verum, который отвечает за обработку ваших данных; «вы» — любой, кто пользуется этими сайтами и приложениями. Если к вам применяются Общий регламент ЕС по защите данных (GDPR) или Закон Республики Узбекистан «О персональных данных» № ЗРУ-547, у вас есть права, описанные в разделе «Ваши права».',
       ],
       sections: [
         {
@@ -166,6 +169,22 @@ export const LEGAL_COPY = {
           ],
         },
         {
+          id:    'verum-notes',
+          title: 'Verum Notes',
+          blocks: [
+            'Verum Notes (notes.verum.cam) — заметки и задачи на том же аккаунте Verum. Вход такой же, как в Verum Chat: код из письма, затем облачный пароль, который по HTTPS доходит до сервера для проверки. Зашифрованную копию ключей, которую возвращает сервер, этот пароль открывает на вашем устройстве. Verum Notes не меняет ни ваши ключи, ни их копию, ни пароль.',
+            'Каждая заметка и папка шифруется на вашем устройстве до отправки — AES-256-GCM, ключом, который выводится на устройстве из закрытого ключа аккаунта (HKDF). Название, папка, текст, теги, ссылки и задачи находятся внутри зашифрованных данных, а их размер округляется вверх, так что сервер знает его лишь приблизительно. О каждой заметке и папке сервер хранит:',
+            { list: [
+              'зашифрованные данные и вектор инициализации;',
+              'случайный идентификатор, созданный на устройстве, номер версии и время последнего изменения;',
+              'отметку об удалении и то, какому аккаунту запись принадлежит.',
+            ] },
+            'Поэтому сервер видит, сколько у вас заметок и папок, примерно какого они размера и когда меняются, но не их содержание. Искать по заметкам он не может: поиск, ссылки, граф и список задач работают на вашем устройстве. Скриптов статистики Verum Notes не загружает.',
+            'В браузере Verum Notes хранит зашифрованную копию заметок, ещё не отправленные изменения, сессию и выведенный ключ заметок (браузер хранит его так, что никакой скрипт не может его прочитать) — в IndexedDB и localStorage. Выход из аккаунта удаляет их из этого браузера. Если сессия завершилась из-за сброса пароля или истекла сама, зашифрованная копия и ключ остаются, чтобы после входа заметки можно было заново зашифровать новым ключом.',
+            'Удаление заметки навсегда стирает её зашифрованное содержимое на сервере; остаётся только отметка без содержания (идентификатор, версия и время), чтобы об удалении узнали другие ваши устройства. В одном аккаунте — до 2000 заметок и папок. Если вы сбросите пароль, заметки, зашифрованные до сброса, откроются только на устройстве, где сохранился прежний ключ, и оно заново зашифрует их новым; если такого устройства нет, прочитать эти заметки не может никто, включая нас. Экспорт (Markdown или JSON) и импорт выполняются на вашем устройстве, нам ничего не отправляется.',
+          ],
+        },
+        {
           id:    'permissions',
           title: 'Разрешения на устройстве',
           blocks: [
@@ -208,7 +227,7 @@ export const LEGAL_COPY = {
           blocks: [
             'Verum работает на инфраструктуре этих компаний. Каждая обрабатывает данные только для того, чтобы оказывать свою услугу:',
             { list: [
-              'Vercel Inc. — хостинг сайта verum.cam и веб-приложения на chat.verum.cam в глобальной сети Edge (в том числе в ЕС и США). Через адреса verum.cam/r2 и chat.verum.cam/r2 Vercel также передаёт зашифрованные файлы и обновления приложения из files.verum.cam и видит только шифротекст. Обезличенная статистика — см. «Какие данные мы собираем».',
+              'Vercel Inc. — хостинг сайта verum.cam, веб-приложения на chat.verum.cam и Verum Notes на notes.verum.cam в глобальной сети Edge (в том числе в ЕС и США). Через адреса verum.cam/r2 и chat.verum.cam/r2 Vercel также передаёт зашифрованные файлы и обновления приложения из files.verum.cam и видит только шифротекст. Обезличенная статистика — см. «Какие данные мы собираем».',
               'Render Services, Inc. — сервер API и WebSocket, api.verum.cam (дата-центр в Орегоне, США).',
               'MongoDB, Inc. (MongoDB Atlas) — база данных: данные аккаунтов, шифротекст и метаданные.',
               'Cloudflare, Inc. — DNS для verum.cam и его поддоменов, CDN, защита сети (в том числе от DDoS-атак) и проксирование verum.cam и api.verum.cam; хранилище Cloudflare R2 для зашифрованных файлов и обновлений приложения (files.verum.cam); TURN-ретранслятор и STUN-серверы для звонков.',
@@ -239,6 +258,7 @@ export const LEGAL_COPY = {
             { list: [
               'Данные аккаунта — пока существует аккаунт.',
               'Зашифрованные сообщения и файлы — пока их не удалят. Удаление сообщения для всех стирает его зашифрованное содержимое и файл; удаление или очистка чата для всех и выход из чата последнего участника стирают все сообщения и файлы этого чата. Если хранилище в этот момент недоступно, файл удаляется при повторной попытке. Об исчезающих сообщениях — в разделе «Какие данные мы собираем», об удалении аккаунта — в разделе «Удаление аккаунта».',
+              'Заметки Verum Notes — пока вы не удалите их навсегда; после этого остаётся только отметка об удалении без содержания, а при большом числе удалений самые старые отметки удаляются. Подробнее — в разделе «Verum Notes».',
               'Одноразовые коды — действуют 10 минут, затем удаляются автоматически.',
               'Записи о сессиях — удаляются автоматически, когда срок сессии истекает.',
               'Журналы сервера — хранятся у хостинг-провайдера ограниченное время.',
@@ -272,7 +292,8 @@ export const LEGAL_COPY = {
               'завершаем все ваши сессии на всех устройствах;',
               'удаляем профиль, открытый ключ, зашифрованную копию закрытого ключа, хеш пароля, контакты, закреплённые чаты, сессии и подписки на уведомления;',
               'удаляем из хранилища файлы, которые вы отправляли, и стираем зашифрованное содержимое ваших сообщений: в чатах собеседников остаются только пустые записи со временем отправки;',
-              'убираем вас из чатов, удаляем ваши личные чаты (у собеседника они тоже исчезают) и останавливаем трансляции геопозиции.',
+              'убираем вас из чатов, удаляем ваши личные чаты (у собеседника они тоже исчезают) и останавливаем трансляции геопозиции;',
+              'удаляем все ваши заметки и папки Verum Notes вместе с отметками об удалённых.',
             ] },
             'Записи модерации (например, о блокировке аккаунта) могут сохраняться для защиты от злоупотреблений, а журналы сервера удаляются по истечении срока хранения.',
           ],
@@ -318,7 +339,7 @@ export const LEGAL_COPY = {
           id:    'service',
           title: 'Сервис и принятие условий',
           blocks: [
-            'Verum — бесплатная независимая экосистема приватных продуктов со сквозным шифрованием; первый из них — мессенджер Verum Chat. Мы можем менять, приостанавливать или прекращать работу любой части Сервиса в любое время.',
+            'Verum — бесплатная независимая экосистема приватных продуктов со сквозным шифрованием: мессенджер Verum Chat и Verum Notes — зашифрованные заметки и задачи. Мы можем менять, приостанавливать или прекращать работу любой части Сервиса в любое время.',
             'Пользоваться Сервисом можно с 16 лет. Если закон вашей страны это допускает, человек младше 16 лет может пользоваться Сервисом с согласия родителя или законного представителя, который в этом случае принимает эти условия от его имени.',
           ],
         },
@@ -333,7 +354,7 @@ export const LEGAL_COPY = {
           id:    'password-and-keys',
           title: 'Пароль и ключи шифрования',
           blocks: [
-            'Verum построен на архитектуре нулевого разглашения (Zero-Knowledge): мы не храним ваш пароль и закрытый ключ в читаемом виде и не можем их восстановить — в том числе пароль, которым защищена зашифрованная копия ваших ключей. Если вы забыли пароль, его можно сбросить кодом из письма, но при этом создаются новые ключи, и прежняя зашифрованная история остаётся читаемой только на устройстве, где сохранился прежний ключ. Если пароль утерян и прежнего ключа нет ни на одном устройстве, восстановить доступ к зашифрованной переписке не может никто, включая нас.',
+            'Verum построен на архитектуре нулевого разглашения (Zero-Knowledge): мы не храним ваш пароль и закрытый ключ в читаемом виде и не можем их восстановить — в том числе пароль, которым защищена зашифрованная копия ваших ключей. Если вы забыли пароль, его можно сбросить кодом из письма, но при этом создаются новые ключи, и прежняя зашифрованная история остаётся читаемой только на устройстве, где сохранился прежний ключ. Если пароль утерян и прежнего ключа нет ни на одном устройстве, восстановить доступ к зашифрованной переписке не может никто, включая нас. То же относится к Verum Notes: заметки зашифрованы ключом, выведенным из закрытого ключа аккаунта, поэтому после сброса заметки, сохранённые раньше, открываются только на устройстве с прежним ключом.',
           ],
         },
         {
@@ -464,7 +485,7 @@ export const LEGAL_COPY = {
         'You can delete your account at any time, in Settings or by email.',
       ],
       intro: [
-        'This policy explains what data Verum processes, why and where, and what we cannot see. It covers the Verum ecosystem, which runs on one Verum account: the verum.cam website, the Verum Chat messenger at chat.verum.cam (the web app) and the Android app. Verum Notes (notes.verum.cam) is not open yet and processes no data; we will extend this policy before it opens. "Verum", "we" and "us" mean the developer of Verum, who is responsible for processing your data; "you" means anyone who uses these websites and apps. If the EU General Data Protection Regulation (GDPR) or the Law of the Republic of Uzbekistan No. ZRU-547 "On Personal Data" applies to you, you have the rights described under "Your rights".',
+        'This policy explains what data Verum processes, why and where, and what we cannot see. It covers the Verum ecosystem, which runs on one Verum account: the verum.cam website, the Verum Chat messenger at chat.verum.cam (the web app) and the Android app. It also covers Verum Notes, encrypted notes and tasks at notes.verum.cam (see "Verum Notes"). "Verum", "we" and "us" mean the developer of Verum, who is responsible for processing your data; "you" means anyone who uses these websites and apps. If the EU General Data Protection Regulation (GDPR) or the Law of the Republic of Uzbekistan No. ZRU-547 "On Personal Data" applies to you, you have the rights described under "Your rights".',
       ],
       sections: [
         {
@@ -546,6 +567,22 @@ export const LEGAL_COPY = {
           ],
         },
         {
+          id:    'verum-notes',
+          title: 'Verum Notes',
+          blocks: [
+            'Verum Notes (notes.verum.cam) is a notes and tasks app on the same Verum account. You sign in to it as to Verum Chat: a code sent by email, then your cloud password, which reaches the server over HTTPS for the check. The encrypted copy of your keys that the server returns is opened on your device with that password. Verum Notes never changes your keys, their copy or your password.',
+            'Every note and folder is encrypted on your device before it is sent, with AES-256-GCM, under a key derived on your device from your account\'s private key (HKDF). The title, the folder, the text, tags, links and tasks are inside the encrypted data, and its size is rounded up, so the server learns it only approximately. For each note or folder the server stores:',
+            { list: [
+              'the encrypted data and its initialisation vector;',
+              'a random identifier made on your device, a version number and the time of the last change;',
+              'whether it was deleted, and which account it belongs to.',
+            ] },
+            'So the server can see how many notes and folders you have, roughly how large each one is and when they change, but not what they say. It cannot search your notes: search, links, the graph and the task list work on your device. Verum Notes loads no statistics scripts.',
+            'In the browser, Verum Notes keeps the encrypted copy of your notes, changes waiting to sync, your session and the derived note key (the browser stores it so that no script can read it) in IndexedDB and localStorage. Signing out deletes them from that browser. If the session ends because the password was reset, or runs out on its own, the encrypted copy and the key stay, so the notes can be encrypted again under your new key after you sign in.',
+            'Deleting a note for good erases its encrypted content on the server; only a mark without content (its identifier, version and time) stays, so your other devices learn of the deletion. One account holds up to 2,000 notes and folders. If you reset your password, notes encrypted before the reset open only on a device that still holds your previous key, and that device encrypts them again under the new one; if no device holds it, nobody, including us, can read those notes. Export (Markdown or JSON) and import happen on your device; nothing is sent to us.',
+          ],
+        },
+        {
           id:    'permissions',
           title: 'Device permissions',
           blocks: [
@@ -588,7 +625,7 @@ export const LEGAL_COPY = {
           blocks: [
             'Verum runs on the infrastructure of these companies. Each processes data only to provide its service:',
             { list: [
-              'Vercel Inc.: hosts the verum.cam website and the web app at chat.verum.cam on its global edge network (including in the EU and the USA). Through verum.cam/r2 and chat.verum.cam/r2 it also relays encrypted files and app updates from files.verum.cam, seeing only ciphertext. Anonymous statistics: see "What data we collect".',
+              'Vercel Inc.: hosts the verum.cam website, the web app at chat.verum.cam and Verum Notes at notes.verum.cam on its global edge network (including in the EU and the USA). Through verum.cam/r2 and chat.verum.cam/r2 it also relays encrypted files and app updates from files.verum.cam, seeing only ciphertext. Anonymous statistics: see "What data we collect".',
               'Render Services, Inc.: the API and WebSocket server, api.verum.cam (data centre in Oregon, USA).',
               'MongoDB, Inc. (MongoDB Atlas): the database with account data, ciphertext and metadata.',
               'Cloudflare, Inc.: DNS for verum.cam and its subdomains, CDN, network protection (including against DDoS attacks) and proxying for verum.cam and api.verum.cam; Cloudflare R2 storage for encrypted files and app updates (files.verum.cam); the TURN relay and STUN servers for calls.',
@@ -619,6 +656,7 @@ export const LEGAL_COPY = {
             { list: [
               'Account data: for as long as the account exists.',
               'Encrypted messages and files: until they are deleted. Deleting a message for everyone erases its encrypted content and file; deleting or clearing a chat for everyone, or the last member leaving it, erases all its messages and files. If storage is unavailable at that moment, the file is deleted on a later retry. For disappearing messages, see "What data we collect"; for account deletion, see "Deleting your account".',
+              'Verum Notes: a note stays until you delete it for good; then only a mark of the deletion without content remains, and with many deletions the oldest marks are removed. See "Verum Notes".',
               'One-time codes: valid for 10 minutes, then deleted automatically.',
               'Session records: deleted automatically when the session expires.',
               'Server logs: kept by our hosting provider for a limited time.',
@@ -652,7 +690,8 @@ export const LEGAL_COPY = {
               'sign you out on every device;',
               'delete your profile, public key, encrypted private-key copy, password hash, contacts, pinned chats, sessions and notification subscriptions;',
               'delete the files you sent from storage and erase the encrypted content of your messages: only empty placeholders with the time they were sent remain in other people\'s chats;',
-              'remove you from your chats, delete your private chats (they disappear for the other person too) and stop location sharing.',
+              'remove you from your chats, delete your private chats (they disappear for the other person too) and stop location sharing;',
+              'delete all your Verum Notes notes and folders, with the marks of deleted ones.',
             ] },
             'Moderation records (for example, that an account was banned) may be kept to prevent abuse, and server logs are deleted when their retention period ends.',
           ],
@@ -698,7 +737,7 @@ export const LEGAL_COPY = {
           id:    'service',
           title: 'The Service and accepting these terms',
           blocks: [
-            'Verum is a free, independent ecosystem of private products with end-to-end encryption, starting with the Verum Chat messenger. We may change, suspend or discontinue any part of the Service at any time.',
+            'Verum is a free, independent ecosystem of private products with end-to-end encryption: the Verum Chat messenger and Verum Notes, encrypted notes and tasks. We may change, suspend or discontinue any part of the Service at any time.',
             'You must be at least 16 years old to use the Service. Where the law of your country allows it, a younger person may use it with the consent of a parent or legal guardian, who then accepts these terms on their behalf.',
           ],
         },
@@ -713,7 +752,7 @@ export const LEGAL_COPY = {
           id:    'password-and-keys',
           title: 'Your password and encryption keys',
           blocks: [
-            'Verum is built on a zero-knowledge architecture: we do not keep your password or your private key in a readable form and cannot recover them, including the password that protects the encrypted copy of your keys. If you forget your password, you can reset it with a code sent by email, but this creates new keys, and your earlier encrypted history stays readable only on a device that still holds the previous key. If the password is lost and no device holds that key any more, nobody, including us, can restore access to your encrypted conversations.',
+            'Verum is built on a zero-knowledge architecture: we do not keep your password or your private key in a readable form and cannot recover them, including the password that protects the encrypted copy of your keys. If you forget your password, you can reset it with a code sent by email, but this creates new keys, and your earlier encrypted history stays readable only on a device that still holds the previous key. If the password is lost and no device holds that key any more, nobody, including us, can restore access to your encrypted conversations. The same holds for Verum Notes: notes are encrypted under a key derived from your account\'s private key, so after a reset the notes saved before it open only on a device that holds the previous key.',
           ],
         },
         {

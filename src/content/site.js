@@ -17,8 +17,9 @@
  *    "the server never sees your password";
  *  - the messenger has cookie-free Vercel statistics: say "no ad trackers or
  *    third-party cookies", never "no analytics";
- *  - Verum Notes is not open: its card says so (status), and nothing claims
- *    that anyone uses it yet;
+ *  - Verum Notes is open (notes.verum.cam, repo verum-notes): what its card
+ *    says must hold there: the same account and sign-in, notes encrypted on
+ *    the device, only encrypted data on the server (verum-notes CLAUDE.md);
  *  - one account, but each product signs in on its own: storage is per
  *    origin, so never "sign in once for everything".
  */
@@ -74,7 +75,6 @@ export const COPY = {
       title: 'Products',
       lead:  'Separate apps with one account and one security model.',
       live:  'Live',
-      soon:  'Beta / Soon',
       chat: {
         text:      'A secure messenger with end-to-end encryption: private chats, audio and video calls, round video notes, voice messages, files, and the Live Locator for sharing where you are.',
         features:  ['Audio and video calls', 'Video notes', 'Live Locator', 'Disappearing messages', 'QR sign-in'],
@@ -85,8 +85,8 @@ export const COPY = {
       notes: {
         text:     'An end-to-end encrypted Markdown knowledge base and task list in the style of Obsidian: a folder tree, two-way [[links]], a graph of connections, tags and task checkboxes, synced through your Verum account.',
         features: ['Folder tree', 'Two-way [[links]]', 'Link graph', 'Tags', 'Task checkboxes'],
-        status:   'In development. It will open at notes.verum.cam, on the same Verum account.',
-        open:     'Go to Verum Notes',
+        status:   'Sign in with your Verum account. Each note is encrypted on your device before it syncs: the server stores only encrypted data, and search, links and tasks work on the device.',
+        open:     'Open Verum Notes',
       },
     },
     security: {
@@ -162,7 +162,6 @@ export const COPY = {
       title: 'Продукты',
       lead:  'Отдельные приложения с одним аккаунтом и одной моделью безопасности.',
       live:  'Live',
-      soon:  'Бета / Скоро',
       chat: {
         text:      'Защищённый мессенджер со сквозным шифрованием: личные чаты, аудио- и видеозвонки, видеокружки, голосовые сообщения, файлы и Live Locator, чтобы делиться геопозицией.',
         features:  ['Аудио- и видеозвонки', 'Видеокружки', 'Live Locator', 'Исчезающие сообщения', 'Вход по QR-коду'],
@@ -173,8 +172,8 @@ export const COPY = {
       notes: {
         text:     'База знаний и задач на Markdown в стиле Obsidian со сквозным шифрованием: дерево папок, двусторонние связи [[заметка]], граф связей, теги и чек-боксы задач с синхронизацией через ваш аккаунт Verum.',
         features: ['Дерево папок', 'Связи [[заметка]]', 'Граф связей', 'Теги', 'Чек-боксы задач'],
-        status:   'В разработке. Откроется на notes.verum.cam, с тем же аккаунтом Verum.',
-        open:     'Перейти в Verum Notes',
+        status:   'Вход — аккаунтом Verum. Каждая заметка шифруется на вашем устройстве до синхронизации: сервер хранит только зашифрованные данные, а поиск, ссылки и задачи работают на устройстве.',
+        open:     'Открыть Verum Notes',
       },
     },
     security: {
@@ -250,7 +249,6 @@ export const COPY = {
       title: 'Mahsulotlar',
       lead:  'Bitta akkaunt va bitta xavfsizlik modeliga ega alohida ilovalar.',
       live:  'Live',
-      soon:  'Beta / Tez orada',
       chat: {
         text:      'Uchdan-uchgacha shifrlangan xavfsiz messenjer: shaxsiy chatlar, audio va video qo‘ng‘iroqlar, dumaloq video xabarlar, ovozli xabarlar, fayllar va joylashuvingizni ulashish uchun Live Locator.',
         features:  ['Audio va video qo‘ng‘iroqlar', 'Video xabarlar', 'Live Locator', 'O‘chib ketadigan xabarlar', 'QR-kod orqali kirish'],
@@ -261,8 +259,8 @@ export const COPY = {
       notes: {
         text:     'Obsidian uslubidagi, uchdan-uchgacha shifrlangan Markdown bilimlar va vazifalar bazasi: papkalar daraxti, ikki tomonlama [[havolalar]], bog‘lanishlar grafi, teglar va vazifa belgilari — Verum akkauntingiz orqali sinxronlanadi.',
         features: ['Papkalar daraxti', 'Ikki tomonlama [[havolalar]]', 'Bog‘lanishlar grafi', 'Teglar', 'Vazifa belgilari'],
-        status:   'Ishlab chiqilmoqda. notes.verum.cam manzilida, o‘sha Verum akkaunti bilan ochiladi.',
-        open:     'Verum Notes’ga o‘tish',
+        status:   'Verum akkauntingiz bilan kiring. Har bir qayd sinxronlanishidan oldin qurilmangizda shifrlanadi: server faqat shifrlangan ma’lumotni saqlaydi, qidiruv, havolalar va vazifalar esa qurilmada ishlaydi.',
+        open:     'Verum Notes’ni ochish',
       },
     },
     security: {

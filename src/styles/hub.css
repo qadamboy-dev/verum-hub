@@ -356,13 +356,6 @@
   background:    var(--text-0);
   box-shadow:    0 0 0 3px rgba(250, 250, 250, 0.12);
 }
-.hub-status--soon {
-  border-style: dashed;
-  border-color: var(--border-bright);
-  background:   transparent;
-  color:        var(--text-1);
-}
-
 .hub-features {
   display:               grid;
   grid-template-columns: 1fr;

@@ -85,7 +85,14 @@ function structuredData(page) {
       description: COPY.en.products.chat.text,
       publisher: { '@id': `${SITE_URL}/#organization` },
     };
-    return { '@context': 'https://schema.org', '@graph': [org, site, chat] };
+    const notes = {
+      '@type': 'SoftwareApplication', '@id': `${NOTES_URL}#app`, name: 'Verum Notes', url: NOTES_URL,
+      applicationCategory: 'ProductivityApplication', operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      description: COPY.en.products.notes.text,
+      publisher: { '@id': `${SITE_URL}/#organization` },
+    };
+    return { '@context': 'https://schema.org', '@graph': [org, site, chat, notes] };
   }
   return {
     '@context': 'https://schema.org',
@@ -252,20 +259,20 @@ function products(apkUrl) {
           <a class="btn-secondary hub-product-btn" href="${esc(apkUrl)}" data-product="apk" type="application/vnd.android.package-archive">${icon('Download', { size: 15 })}${t(c => c.products.chat.apk)}</a>
         </div>
       </article>
-      <article class="hub-card hub-product hub-product--soon" aria-labelledby="notes-title">
+      <article class="hub-card hub-product" aria-labelledby="notes-title">
         <div class="hub-product-head">
           <span class="hub-card-icon">${icon('NotebookPen', { size: 20 })}</span>
           <div class="hub-product-name">
             <h3 id="notes-title" class="hub-card-title">Verum Notes</h3>
             <p class="hub-product-host">notes.verum.cam</p>
           </div>
-          <span class="hub-status hub-status--soon">${t(c => c.products.soon)}</span>
+          <span class="hub-status hub-status--live"><span class="hub-status-dot" aria-hidden="true"></span>${t(c => c.products.live)}</span>
         </div>
         <p class="hub-card-text">${t(c => c.products.notes.text)}</p>
         ${features('notes', NOTES_FEATURES)}
         <p class="hub-product-note">${t(c => c.products.notes.status)}</p>
         <div class="hub-product-actions">
-          <a class="btn-secondary hub-product-btn" href="${NOTES_URL}" data-product="notes">${t(c => c.products.notes.open)}${icon('ArrowUpRight', { size: 15 })}</a>
+          <a class="btn-primary hub-product-btn" href="${NOTES_URL}" data-product="notes">${t(c => c.products.notes.open)}${icon('ArrowUpRight', { size: 15 })}</a>
         </div>
       </article>
     </div>
