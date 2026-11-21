@@ -26,11 +26,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **2026-11-21, the audit of stages 1–3.** Two fixes; nothing else in vercel.json, `hub.js` (the `#chat=` hand-off) or `sw.js` needed one:
   - Everything under `/r2/` (the bucket, user uploads included) now gets its own CSP, `default-src 'none'; sandbox; frame-ancestors 'none'`, plus nosniff (vercel.json below).
   - A notification click in `sw.js` opens only `https://chat.verum.cam/…`. It used to follow any `url` kept in a notification's data.
-- `yarn test`: 236 tests in 10 files, the real build included. `yarn build` passes its own dist/ checks. `yarn audit`: 0 vulnerabilities (118 packages, at 2026-11-13; no dependency changed since).
-- Looked at in Chromium under the real headers (a local server that sends vercel.json's CSP): no CSP or Trusted Types violation; EN, RU and UZ; /privacy#delete-account landing in the shown document; 375 px without horizontal scroll; 404.
+- **2026-11-21, no APK on the site.** Scanners flagged verum.cam as linking an APK ("contains-apk"): the button pointed at `/r2/apk/verum.apk` with `type="application/vnd.android.package-archive"`. It now opens the GitHub releases page in a new tab, `https://github.com/qadamboy-dev/verum-hub/releases/latest` (`ANDROID_RELEASES_URL` in `content/site.js`, `target="_blank" rel="noopener"`, `data-product="android"`). The label is still "Download Android APK": the word, never the `.apk` extension. `checkDist.js` fails the build if any page or other text file names a `.apk` file or the APK media type. The build reads no environment variables any more: `VITE_ANDROID_APK_URL` and `.env.example` are gone, and a value left in Vercel's settings changes nothing. `security.txt` was brought to the owner's list the same day (below).
+- `yarn test`: 248 tests in 10 files, the real build included. `yarn build` passes its own dist/ checks. `yarn audit`: 0 vulnerabilities (118 packages, at 2026-11-13; no dependency changed since).
+- Looked at in Chromium under the real headers (a local server that sends vercel.json's CSP), on 2026-11-13 and again on 2026-11-21 after the releases link:
+  - no CSP or Trusted Types violation, `hub.js` running, fonts and styles loaded;
+  - EN, RU and UZ;
+  - /privacy#delete-account landing in the shown document;
+  - 375 px without horizontal scroll;
+  - 404;
+  - no `.apk` in any page;
+  - security.txt served as `text/plain`.
 
 **The owner's steps still open** (the domains moved: verum.cam and www here, chat.verum.cam on the messenger's project):
-1. Upload the APK to the bucket at `apk/verum.apk` (the button's default), or set `VITE_ANDROID_APK_URL`. `https://verum.cam/r2/apk/verum.apk` answered 404 on 2026-11-21: the download button fails until then.
+1. **The Android button needs a public release.** `https://github.com/qadamboy-dev/verum-hub` and its `/releases/latest` answered 404 to a visitor who isn't signed in on 2026-11-21: the repo is private, or not visible to the public. Until the repo is public and has a release with the APK attached, the button leads to GitHub's 404. The other way out is a separate public repo for releases: change `ANDROID_RELEASES_URL`. The APK itself comes from the messenger's native shell, which lives outside every repo here (`../e2ee-chat-frontend/CLAUDE.md`). On 2026-11-21 it wasn't on this machine either, and neither was a JDK, the Android SDK or the release keystore.
 2. On the backend, `yarn r2:init-cors` against the real bucket, unless it ran already: without it, uploads from chat.verum.cam are refused.
 3. Read the legal documents (below): they were widened for the ecosystem and are not yet approved.
 4. Cloudflare: verum.cam answers from Vercel directly (DNS only). If it is ever proxied, keep features that rewrite HTML off for it (Web Analytics injection, Rocket Loader). The CSP blocks what they inject; the e-mail addresses are already wrapped in `<!--email_off-->`.
@@ -69,22 +77,29 @@ yarn test       # vitest: content, pages, vercel.json, public/, hub.js, sw.js, c
 
 ## vercel.json
 
-- **Rewrites, in this order:** `/r2/ota/:path*` → `https://files.verum.cam/ota/:path*` (installed Android apps, 1.0.4 to 1.0.6, read `https://verum.cam/r2/ota/manifest.json` first and fetch bundles there: never drop it), `/r2/:path*` → `https://files.verum.cam/:path*` (their media downloads and the APK), `/privacy` and `/terms` → the HTML files. No SPA fallback: an unknown path is `404.html` with a 404.
+- **Rewrites, in this order:** `/r2/ota/:path*` → `https://files.verum.cam/ota/:path*` (installed Android apps, 1.0.4 to 1.0.6, read `https://verum.cam/r2/ota/manifest.json` first and fetch bundles there: never drop it), `/r2/:path*` → `https://files.verum.cam/:path*` (their media downloads; no page links the bucket's `apk/` any more), `/privacy` and `/terms` → the HTML files. No SPA fallback: an unknown path is `404.html` with a 404.
 - **CSP:** `default-src 'none'`, and `'self'` only for scripts, styles, images, fonts, connections and the manifest; `base-uri`, `form-action`, `frame-ancestors`, `object-src` are `'none'`; `upgrade-insecure-requests`; Trusted Types required with no policy allowed (`hub.js` touches no DOM sink: keep it that way). No `unsafe-*`, no hashes, no `data:`. `'self'` includes `/r2/`, which proxies user uploads. That is safe because the backend signs `application/octet-stream` into every upload and `nosniff` is on. Since 2026-11-21 there is a second lock: a rule `/r2/(.*)` after `/(.*)` (Vercel merges header rules, and the later one wins for the same key) gives everything there `default-src 'none'; sandbox; frame-ancestors 'none'`. So an object that got another type some other way still can't run a script, or be verum.cam's origin with its storage and its service worker. The CSP touches documents only, so the apps' `fetch` of the OTA manifest, bundles and media is unchanged. There is no Cross-Origin-Resource-Policy there: the installed apps load these files from their own origin.
 - HSTS with preload (as on the messenger's domain), `nosniff`, `DENY`, COOP, a Permissions-Policy that asks for nothing, `text/plain` for security.txt, immutable `/assets/`.
 - `www.verum.cam` redirects to `https://verum.cam/:path`.
 
 ## public/
 
-- `.well-known/security.txt`: the same file as the messenger's (both hosts as `Canonical`, the Terms' `#security` as `Policy`). `Expires` must stay under a year ahead: renew it here and there (`public.test.js` fails once it passes).
+- `.well-known/security.txt` (RFC 9116), as the owner set it on 2026-11-21:
+  - `Contact: mailto:support@verum.cam`
+  - `Expires: 2027-11-21T00:00:00.000Z`
+  - `Preferred-Languages: ru, en, uz`
+  - `Canonical`: this host only, `https://verum.cam/.well-known/security.txt`
+  - `Policy`: the Terms' `#security`, then the Privacy Policy
+
+  `Expires` must stay in the future and under a year ahead (`public.test.js` fails once it passes): renew it here, and keep the messenger's copy in step. That copy (`../e2ee-chat-frontend/public/.well-known/security.txt`) serves chat.verum.cam and lists both hosts as `Canonical`. On 2026-11-21 it still said `en, ru, uz`, with `Expires` 2027-11-01: valid, but no longer the same file.
 - `sw.js`: the worker that replaces the messenger's on verum.cam. Nothing registers it; browsers that had the messenger's worker fetch `/sw.js` to update it and get this one. On activation it ends the old push subscription (the server drops it at the push service's 410) and, if there was one, shows once that the messenger moved; a push that still arrives is shown, and every click opens chat.verum.cam (`#chat=<id>` kept). A `url` kept in a notification's data is followed only when it starts with `https://chat.verum.cam/`; anything else opens the messenger's home. No fetch handler. `sw.test.js` runs it in a fake scope.
 - `og-cover.png` is the render of `scripts/og-cover.html` (the command is in that file). Icons are the messenger's (`yarn icons` there).
 - `robots.txt`, `sitemap.xml` (the hub and the two documents).
 
 ## Build checks
 
-`scripts/checkDist.js` reads `dist/` after every build and fails it (`verum-hub-checks` plugin) on: an inline script other than JSON-LD, an event-handler or style attribute, a `<style>` element, a script or stylesheet from another origin, a `data:` or remote `url()` in CSS, a local link or asset that doesn't exist (vercel.json's rewrites count), a plain-http or `javascript:` link, `target=_blank` without `noopener`. `build.assetsInlineLimit` is 0 so Vite never inlines a font as `data:`.
+`scripts/checkDist.js` reads `dist/` after every build and fails it (`verum-hub-checks` plugin) on: an inline script other than JSON-LD, an event-handler or style attribute, a `<style>` element, a script or stylesheet from another origin, a `data:` or remote `url()` in CSS, a local link or asset that doesn't exist (vercel.json's rewrites count), a plain-http or `javascript:` link, `target=_blank` without `noopener`, and a `.apk` file or the APK media type named in a page or in any other text file of the site (`.js`, `.css`, `.txt`, `.xml`, `.json`, `.webmanifest`, `.svg`). `build.assetsInlineLimit` is 0 so Vite never inlines a font as `data:`.
 
 ## Tests
 
-Vitest in Node (`vitest.config.js`); `src/test/helpers.js` renders a page into its template and parses it with JSDOM. `build.test.js` runs two real builds into temporary folders (the second with `VITE_ANDROID_APK_URL`).
+Vitest in Node (`vitest.config.js`); `src/test/helpers.js` renders a page into its template and parses it with JSDOM. `build.test.js` runs two real builds into temporary folders. The second has an old `VITE_ANDROID_APK_URL` set, to prove the build ignores it: neither build may name a `.apk` anywhere.
