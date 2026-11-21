@@ -38,13 +38,28 @@ describe('security.txt (RFC 9116)', () => {
     expect(left).toBeLessThan(366 * 24 * 3600 * 1000);
   });
 
-  test('the same file as the messenger\'s: both hosts are Canonical, the Terms\' disclosure rules are the Policy', () => {
-    expect(all('canonical')).toEqual([
-      'https://verum.cam/.well-known/security.txt',
-      'https://chat.verum.cam/.well-known/security.txt',
-    ]);
+  test('its own URL is the Canonical, the Terms\' disclosure rules are the Policy, Russian first', () => {
+    // RFC 9116: a copy fetched from a URL no Canonical lists is not to be
+    // trusted. This file is served from verum.cam only (the messenger's copy,
+    // e2ee-chat-frontend, serves chat.verum.cam and lists its own host).
+    expect(all('canonical')).toEqual(['https://verum.cam/.well-known/security.txt']);
     expect(all('policy')).toEqual(['https://verum.cam/terms#security', 'https://verum.cam/privacy.html']);
-    expect(all('preferred-languages')).toEqual(['en, ru, uz']);
+    expect(all('preferred-languages')).toEqual(['ru, en, uz']);
+    for (const [k, v] of fields) {
+      if (['canonical', 'policy', 'acknowledgments', 'encryption', 'hiring'].includes(k)) expect(v).toMatch(/^https:\/\//);
+    }
+  });
+
+  test('Expires and Preferred-Languages appear once (RFC 9116: they must not repeat)', () => {
+    expect(all('expires')).toHaveLength(1);
+    expect(all('preferred-languages')).toHaveLength(1);
+  });
+
+  test('vercel.json serves it at /.well-known/ as UTF-8 plain text, with no rewrite in the way', () => {
+    const vercel = JSON.parse(file('vercel.json'));
+    const rule = vercel.headers.find(h => h.source === '/.well-known/security.txt');
+    expect(Object.fromEntries(rule.headers.map(h => [h.key.toLowerCase(), h.value]))['content-type']).toBe('text/plain; charset=utf-8');
+    expect(vercel.rewrites.filter(r => r.source.includes('well-known'))).toEqual([]);
   });
 });
 
