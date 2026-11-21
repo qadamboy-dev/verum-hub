@@ -66,10 +66,13 @@
  *  - the Android APK is published on GitHub Releases (qadamboy-dev/
  *    verum-hub), signed by the release certificate whose SHA-256 the Terms
  *    quote in the Service section.
- *  - before backend 2843329 (2026-11-02) deletions left data behind: the
- *    files of deleted messages, and the messages and files of chats deleted
- *    for everyone; uploads never sent stay too. Retention says so for the
- *    files; the backend's `yarn media:gc` is what clears them.
+ *  - before backend 2843329 (2026-11-02) a chat deleted for everyone was
+ *    only hidden (isActive: false), and a chat all its members left stayed:
+ *    both kept their messages and files (a bot chat, once the person left).
+ *    A single deleted message has lost its file since 2026-07-13 (7212fc2),
+ *    but files sent before 2026-07-20 may have no recorded key. Uploads
+ *    never sent stay too. Retention says all this; the backend's
+ *    `yarn media:gc --delete --close-chats` clears what it can.
  *  - Vercel Analytics and Speed Insights run in the messenger only
  *    (e2ee-chat-frontend src/main.jsx); the hub and Verum Notes load none.
  *
@@ -277,7 +280,7 @@ export const LEGAL_COPY = {
             { list: [
               'Данные аккаунта — пока существует аккаунт.',
               'Зашифрованные сообщения и файлы — пока их не удалят. Удаление сообщения для всех стирает его зашифрованное содержимое и файл; удаление или очистка чата для всех и выход из чата последнего участника стирают все сообщения и файлы этого чата. Если хранилище в этот момент недоступно, файл удаляется при повторной попытке. Об исчезающих сообщениях — в разделе «Какие данные мы собираем», об удалении аккаунта — в разделе «Удаление аккаунта».',
-              'Зашифрованные файлы сообщений, удалённых до ноября 2026 года, и файлы, которые загрузили, но не отправили, остаются в хранилище, пока мы его не очистим. Прочитать их мы тоже не можем.',
+              'До 2 ноября 2026 года чат, удалённый для всех, только скрывался, а чат, из которого вышли все участники, оставался на сервере (диалог с ботом Verum Audio — после того как из него вышли вы). Зашифрованные сообщения и файлы таких чатов, а также файлы, которые загрузили, но не отправили, хранятся, пока мы не очистим хранилище. Прочитать их мы не можем — кроме диалогов с ботом Verum Audio, ключ которого хранится на сервере. Файлы, отправленные до 20 июля 2026 года, могут остаться в хранилище и после удаления сообщения: тогда сервер ещё не всегда знал, какой файл относится к сообщению.',
               'Заметки Verum Notes — пока вы не удалите их навсегда; после этого остаётся только отметка об удалении без содержания, а при большом числе удалений самые старые отметки удаляются. Подробнее — в разделе «Verum Notes».',
               'Одноразовые коды — действуют 10 минут, затем удаляются автоматически.',
               'Записи о сессиях — удаляются автоматически, когда срок сессии истекает.',
@@ -678,7 +681,7 @@ export const LEGAL_COPY = {
             { list: [
               'Account data: for as long as the account exists.',
               'Encrypted messages and files: until they are deleted. Deleting a message for everyone erases its encrypted content and file; deleting or clearing a chat for everyone, or the last member leaving it, erases all its messages and files. If storage is unavailable at that moment, the file is deleted on a later retry. For disappearing messages, see "What data we collect"; for account deletion, see "Deleting your account".',
-              'Encrypted files of messages deleted before November 2026, and files that were uploaded but never sent, stay in storage until we clean it up. We cannot read them either.',
+              'Before 2 November 2026, a chat deleted for everyone was only hidden, and a chat that all its members left stayed on the server (a chat with the Verum Audio bot, once you left it). The encrypted messages and files of such chats, and files that were uploaded but never sent, stay until we clean up the storage. We cannot read them, except chats with the Verum Audio bot, whose key the server holds. Files sent before 20 July 2026 may stay in storage after their message is deleted: at the time, the server did not always know which file a message used.',
               'Verum Notes: a note stays until you delete it for good; then only a mark of the deletion without content remains, and with many deletions the oldest marks are removed. See "Verum Notes".',
               'One-time codes: valid for 10 minutes, then deleted automatically.',
               'Session records: deleted automatically when the session expires.',

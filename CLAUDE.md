@@ -80,7 +80,7 @@ yarn test       # vitest: content, pages, vercel.json, public/, hub.js, sw.js, c
   - The messenger calls the API on Render directly (`e2ee-chat-backend-eeei.onrender.com`), and only Verum Notes goes through api.verum.cam.
   - GitHub joins the processors, because the APK is on Releases. The Terms name that channel and quote the release certificate's SHA-256.
   - Cobalt is described as used only when switched on.
-  - Retention now covers files that deletions left in R2 before backend `2843329`, and uploads never sent.
+  - Retention now says what deletions left before backend `2843329`. A chat deleted for everyone was only hidden, and a chat all its members left stayed, both with their messages and files. Files sent before 2026-07-20 may outlive their message, and uploads never sent stay. A first version, published the same day, said that single deleted messages kept their files. That was wrong: they have lost them since `7212fc2` (2026-07-13).
   - The statistics are the web messenger's only.
   - Account deletion names Saved Messages, and the Privacy description names Verum Notes.
 
