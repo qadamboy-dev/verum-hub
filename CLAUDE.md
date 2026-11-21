@@ -27,6 +27,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - Everything under `/r2/` (the bucket, user uploads included) now gets its own CSP, `default-src 'none'; sandbox; frame-ancestors 'none'`, plus nosniff (vercel.json below).
   - A notification click in `sw.js` opens only `https://chat.verum.cam/…`. It used to follow any `url` kept in a notification's data.
 - **2026-11-21, no APK on the site.** Scanners flagged verum.cam as linking an APK ("contains-apk"): the button pointed at `/r2/apk/verum.apk` with `type="application/vnd.android.package-archive"`. It now opens the GitHub releases page in a new tab, `https://github.com/qadamboy-dev/verum-hub/releases/latest` (`ANDROID_RELEASES_URL` in `content/site.js`, `target="_blank" rel="noopener"`, `data-product="android"`). The label is still "Download Android APK": the word, never the `.apk` extension. `checkDist.js` fails the build if any page or other text file names a `.apk` file or the APK media type. The build reads no environment variables any more: `VITE_ANDROID_APK_URL` and `.env.example` are gone, and a value left in Vercel's settings changes nothing. `security.txt` was brought to the owner's list the same day (below).
+- **2026-11-21, the release v1.0.7 is public, behind the Android button.** The repo is public now. For a visitor who isn't signed in, `releases/latest` answers 302 to `tag/v1.0.7`.
+  - The release carries one asset, `verum-1.0.7.apk`: 7,755,605 bytes, `application/vnd.android.package-archive`, SHA-256 `1373d218a81c6ffe40e0f62e8c58ce97688014192403736b0771d2b082ccbe00`. Its download answers 200 without signing in.
+  - It is the messenger's Android app: `cam.verum.chat` 1.0.7 (versionCode 10007), signed by the release certificate with SHA-256 `c0bf23a6da34e959cd06c9505cdb7abd23539559750e1e1a6b2e151dffc4d0ce`.
+  - It is built from `../e2ee-chat-frontend/mobile/`. That repo's `CLAUDE.md` (Android shell, Releases) keeps the hashes of every release.
+  - A later release goes up the same way: a new tag with the APK attached. The button follows `releases/latest`, so nothing changes here.
+  - Checked the same day with plain requests, after the owner fixed the domain's DNSSEC (its DS record now has algorithm 13). verum.cam answered 200, no page in the sitemap names a `.apk`, and the button's link reached the release. `security.txt` answered 200 `text/plain; charset=utf-8`, and `/r2/apk/verum.apk` answered 404.
 - `yarn test`: 248 tests in 10 files, the real build included. `yarn build` passes its own dist/ checks. `yarn audit`: 0 vulnerabilities (118 packages, at 2026-11-13; no dependency changed since).
 - Looked at in Chromium under the real headers (a local server that sends vercel.json's CSP), on 2026-11-13 and again on 2026-11-21 after the releases link:
   - no CSP or Trusted Types violation, `hub.js` running, fonts and styles loaded;
@@ -38,10 +44,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - security.txt served as `text/plain`.
 
 **The owner's steps still open** (the domains moved: verum.cam and www here, chat.verum.cam on the messenger's project):
-1. **The Android button needs a public release.** `https://github.com/qadamboy-dev/verum-hub` and its `/releases/latest` answered 404 to a visitor who isn't signed in on 2026-11-21: the repo is private, or not visible to the public. Until the repo is public and has a release with the APK attached, the button leads to GitHub's 404. The other way out is a separate public repo for releases: change `ANDROID_RELEASES_URL`. The APK itself comes from the messenger's native shell, which lives outside every repo here (`../e2ee-chat-frontend/CLAUDE.md`). On 2026-11-21 it wasn't on this machine either, and neither was a JDK, the Android SDK or the release keystore.
-2. On the backend, `yarn r2:init-cors` against the real bucket, unless it ran already: without it, uploads from chat.verum.cam are refused.
-3. Read the legal documents (below): they were widened for the ecosystem and are not yet approved.
-4. Cloudflare: verum.cam answers from Vercel directly (DNS only). If it is ever proxied, keep features that rewrite HTML off for it (Web Analytics injection, Rocket Loader). The CSP blocks what they inject; the e-mail addresses are already wrapped in `<!--email_off-->`.
+1. On the backend, `yarn r2:init-cors` against the real bucket, unless it ran already: without it, uploads from chat.verum.cam are refused.
+2. Read the legal documents (below): they were widened for the ecosystem and are not yet approved.
+3. Cloudflare: verum.cam answers from Vercel directly (DNS only). If it is ever proxied, keep features that rewrite HTML off for it (Web Analytics injection, Rocket Loader). The CSP blocks what they inject; the e-mail addresses are already wrapped in `<!--email_off-->`.
 
 **What moves with the origin, and what does not:** browsers keep a session, keys, the key ring, App Lock and push per origin. A person who used the messenger on verum.cam signs in again on chat.verum.cam, allows notifications again, and keeps retired keys only on verum.cam's storage (see the messenger's `CLAUDE.md`). Nothing carries that data across yet.
 
