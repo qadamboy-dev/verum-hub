@@ -12,6 +12,9 @@
  * Everything else is word for word,
  * so the two copies can be compared: change the messenger's copy with this
  * one (or link the messenger to these pages) and keep both dated.
+ * The owner approved the whole text on 2026-11-21, with that day's audit
+ * fixes: the hosts, GitHub, Cobalt, files left in R2, the statistics, Saved
+ * Messages, Verum Notes in the description, the APK's channel and key.
  *
  * The build renders it into dist/privacy.html and dist/terms.html, both
  * languages in each page, as plain HTML (src/render/legal.js). Both
@@ -54,13 +57,28 @@
  *    localisation rule of Law No. ZRU-547 (art. 27-1) is met.
  *  - the API server runs in Render's Oregon region (USA), not in the EU
  *    (confirmed by the operator; the backend's render.yaml pins it).
+ *  - hosts: Cloudflare proxies only api.verum.cam and files.verum.cam;
+ *    verum.cam is DNS only (Vercel answers it). The messenger, on the web
+ *    and on Android, calls the API at e2ee-chat-backend-eeei.onrender.com
+ *    directly; only Verum Notes goes through api.verum.cam.
+ *  - Cobalt is optional and off unless the backend sets COBALT_API_URL
+ *    (/health: bot.cobalt), so it is a service the bot "may use".
+ *  - the Android APK is published on GitHub Releases (qadamboy-dev/
+ *    verum-hub), signed by the release certificate whose SHA-256 the Terms
+ *    quote in the Service section.
+ *  - before backend 2843329 (2026-11-02) deletions left data behind: the
+ *    files of deleted messages, and the messages and files of chats deleted
+ *    for everyone; uploads never sent stay too. Retention says so for the
+ *    files; the backend's `yarn media:gc` is what clears them.
+ *  - Vercel Analytics and Speed Insights run in the messenger only
+ *    (e2ee-chat-frontend src/main.jsx); the hub and Verum Notes load none.
  *
  * Text blocks: a string is a paragraph, { list: [...] } a bulleted list.
  * "{email}" becomes a mailto link to LEGAL_EMAIL.
  */
 
 export const LEGAL_EMAIL   = 'support@verum.cam';
-export const LEGAL_UPDATED = '2026-11-13'; // <time datetime>; shown as "November 2026"
+export const LEGAL_UPDATED = '2026-11-21'; // <time datetime>; shown as "November 2026"
 export const LEGAL_DOCS    = ['privacy', 'terms']; // paths: services/route.js
 
 export const LEGAL_COPY = {
@@ -78,7 +96,7 @@ export const LEGAL_COPY = {
 
     privacy: {
       title:       'Политика конфиденциальности',
-      description: 'Какие данные обрабатывают продукты Verum (verum.cam, мессенджер на chat.verum.cam и приложение для Android), чего сервер не видит благодаря сквозному шифрованию, где хранятся данные, ваши права и как удалить аккаунт.',
+      description: 'Какие данные обрабатывают продукты Verum (verum.cam, мессенджер на chat.verum.cam, приложение для Android и Verum Notes на notes.verum.cam), чего сервер не видит благодаря сквозному шифрованию, где хранятся данные, ваши права и как удалить аккаунт.',
       summary: [
         'Переписка, голосовые, видеокружки, файлы и звонки между людьми защищены сквозным шифрованием (ECDH P-256, AES-256-GCM): мы не можем их прочитать.',
         'Мы храним вашу почту, публичный профиль, зашифрованную копию ключа, зашифрованные сообщения и метаданные, без которых их не доставить. Номер телефона не нужен; рекламы и отслеживающих cookie нет.',
@@ -128,7 +146,7 @@ export const LEGAL_COPY = {
           id:    'verum-audio-bot',
           title: 'Исключение: бот Verum Audio',
           blocks: [
-            'Официальный бот Verum Audio Bot работает на нашем сервере, и его ключ хранится там же. Сообщения, которые вы отправляете в диалог с ботом, расшифровываются на сервере — только чтобы бот прочитал вашу ссылку, скачал запрошенное аудио и отправил его вам обратно зашифрованным сообщением. Ссылка используется только для этого и не записывается в журналы. Для загрузки сервер обращается по ссылке сам, а если это не удаётся — через отдельный сервис загрузки (Cobalt).',
+            'Официальный бот Verum Audio Bot работает на нашем сервере, и его ключ хранится там же. Сообщения, которые вы отправляете в диалог с ботом, расшифровываются на сервере — только чтобы бот прочитал вашу ссылку, скачал запрошенное аудио и отправил его вам обратно зашифрованным сообщением. Ссылка используется только для этого и не записывается в журналы. Для загрузки сервер обращается по ссылке сам. Если это не удаётся, он может обратиться к отдельному сервису загрузки (Cobalt), когда мы этот сервис включаем.',
             'Бот не видит ваши чаты с другими людьми. Если вы не хотите, чтобы сервер обрабатывал ваши сообщения, не пишите боту.',
           ],
         },
@@ -147,7 +165,7 @@ export const LEGAL_COPY = {
               'Сессии: для каждого устройства, где выполнен вход, — IP-адрес, браузер и операционная система (из заголовка User-Agent) и время последней активности. Их список вы видите в настройках, во вкладке «Sessions»: он помогает заметить чужой вход.',
               'Журналы сервера: IP-адрес, время, адрес и результат каждого запроса и User-Agent — для безопасности, ограничения частоты запросов (защита от DDoS-атак и подбора паролей) и отладки.',
               'Подписка на push-уведомления (если вы включили их в браузере): адрес, который выдаёт нам push-сервис браузера.',
-              'Статистика сайта: обезличенная статистика посещений и скорости загрузки без cookie (Vercel Web Analytics и Speed Insights).',
+              'Статистика веб-мессенджера (chat.verum.cam): обезличенная статистика посещений и скорости загрузки без cookie (Vercel Web Analytics и Speed Insights). Сайт verum.cam и Verum Notes скриптов статистики не загружают.',
             ] },
             'Мы не собираем номера телефонов, адресную книгу, рекламные идентификаторы и вашу геопозицию — кроме той, которой вы сами делитесь в трансляции; она защищена сквозным шифрованием.',
           ],
@@ -228,15 +246,16 @@ export const LEGAL_COPY = {
             'Verum работает на инфраструктуре этих компаний. Каждая обрабатывает данные только для того, чтобы оказывать свою услугу:',
             { list: [
               'Vercel Inc. — хостинг сайта verum.cam, веб-приложения на chat.verum.cam и Verum Notes на notes.verum.cam в глобальной сети Edge (в том числе в ЕС и США). Через адреса verum.cam/r2 и chat.verum.cam/r2 Vercel также передаёт зашифрованные файлы и обновления приложения из files.verum.cam и видит только шифротекст. Обезличенная статистика — см. «Какие данные мы собираем».',
-              'Render Services, Inc. — сервер API и WebSocket, api.verum.cam (дата-центр в Орегоне, США).',
+              'Render Services, Inc. — сервер API и WebSocket (дата-центр в Орегоне, США). Мессенджер подключается к нему напрямую, по адресу e2ee-chat-backend-eeei.onrender.com, а Verum Notes — через api.verum.cam.',
               'MongoDB, Inc. (MongoDB Atlas) — база данных: данные аккаунтов, шифротекст и метаданные.',
-              'Cloudflare, Inc. — DNS для verum.cam и его поддоменов, CDN, защита сети (в том числе от DDoS-атак) и проксирование verum.cam и api.verum.cam; хранилище Cloudflare R2 для зашифрованных файлов и обновлений приложения (files.verum.cam); TURN-ретранслятор и STUN-серверы для звонков.',
+              'Cloudflare, Inc. — DNS для verum.cam и его поддоменов; CDN, проксирование и защита сети (в том числе от DDoS-атак) для api.verum.cam и files.verum.cam; хранилище Cloudflare R2 для зашифрованных файлов и обновлений приложения (files.verum.cam); TURN-ретранслятор и STUN-серверы для звонков.',
+              'GitHub, Inc. — хранит установочный файл приложения для Android (APK) на странице Releases репозитория github.com/qadamboy-dev/verum-hub, куда ведёт кнопка на verum.cam; при скачивании GitHub видит ваш IP-адрес.',
               'Brevo — отправка транзакционных писем с одноразовыми кодами подтверждения.',
               'ipapi.co — когда вы подтверждаете вход по QR-коду, по IP-адресу нового устройства определяются примерные город и страна, чтобы показать их вам.',
               'Google — публичные STUN-серверы для звонков, если сервис Cloudflare недоступен; они видят ваш IP-адрес.',
               'Картографические сервисы (OpenFreeMap, CARTO, Esri и для некоторых стилей карты — MapTiler): когда вы открываете карту трансляции геопозиции, устройство загружает с них изображения карты. Они видят ваш IP-адрес и показанный участок карты, но не ваши сообщения.',
               'Push-сервис вашего браузера (например, Google, Mozilla или Apple) — доставляет уведомления в веб-приложении, если вы их включили.',
-              'Cobalt — сервис загрузки, к которому бот Verum Audio обращается, если не может скачать ссылку сам.',
+              'Cobalt — сервис загрузки, к которому бот Verum Audio может обращаться, когда не может скачать ссылку сам (только если мы его включили).',
             ] },
             'Поэтому ваши данные хранятся и обрабатываются за пределами страны, где вы живёте, в том числе за пределами Узбекистана: сервер API находится в США, а перечисленные компании обрабатывают данные и в других странах, в том числе в ЕС.',
             'Мы не продаём персональные данные и не передаём их для рекламы.',
@@ -258,6 +277,7 @@ export const LEGAL_COPY = {
             { list: [
               'Данные аккаунта — пока существует аккаунт.',
               'Зашифрованные сообщения и файлы — пока их не удалят. Удаление сообщения для всех стирает его зашифрованное содержимое и файл; удаление или очистка чата для всех и выход из чата последнего участника стирают все сообщения и файлы этого чата. Если хранилище в этот момент недоступно, файл удаляется при повторной попытке. Об исчезающих сообщениях — в разделе «Какие данные мы собираем», об удалении аккаунта — в разделе «Удаление аккаунта».',
+              'Зашифрованные файлы сообщений, удалённых до ноября 2026 года, и файлы, которые загрузили, но не отправили, остаются в хранилище, пока мы его не очистим. Прочитать их мы тоже не можем.',
               'Заметки Verum Notes — пока вы не удалите их навсегда; после этого остаётся только отметка об удалении без содержания, а при большом числе удалений самые старые отметки удаляются. Подробнее — в разделе «Verum Notes».',
               'Одноразовые коды — действуют 10 минут, затем удаляются автоматически.',
               'Записи о сессиях — удаляются автоматически, когда срок сессии истекает.',
@@ -292,7 +312,7 @@ export const LEGAL_COPY = {
               'завершаем все ваши сессии на всех устройствах;',
               'удаляем профиль, открытый ключ, зашифрованную копию закрытого ключа, хеш пароля, контакты, закреплённые чаты, сессии и подписки на уведомления;',
               'удаляем из хранилища файлы, которые вы отправляли, и стираем зашифрованное содержимое ваших сообщений: в чатах собеседников остаются только пустые записи со временем отправки;',
-              'убираем вас из чатов, удаляем ваши личные чаты (у собеседника они тоже исчезают) и останавливаем трансляции геопозиции;',
+              'убираем вас из чатов, удаляем ваши личные чаты (у собеседника они тоже исчезают) и Saved Messages, останавливаем трансляции геопозиции;',
               'удаляем все ваши заметки и папки Verum Notes вместе с отметками об удалённых.',
             ] },
             'Записи модерации (например, о блокировке аккаунта) могут сохраняться для защиты от злоупотреблений, а журналы сервера удаляются по истечении срока хранения.',
@@ -340,6 +360,7 @@ export const LEGAL_COPY = {
           title: 'Сервис и принятие условий',
           blocks: [
             'Verum — бесплатная независимая экосистема приватных продуктов со сквозным шифрованием: мессенджер Verum Chat и Verum Notes — зашифрованные заметки и задачи. Мы можем менять, приостанавливать или прекращать работу любой части Сервиса в любое время.',
+            'Приложение для Android распространяется как APK на странице Releases репозитория github.com/qadamboy-dev/verum-hub. Все версии подписаны одним ключом разработчика; SHA-256 его сертификата — c0bf23a6da34e959cd06c9505cdb7abd23539559750e1e1a6b2e151dffc4d0ce. Устанавливайте приложение только оттуда.',
             'Пользоваться Сервисом можно с 16 лет. Если закон вашей страны это допускает, человек младше 16 лет может пользоваться Сервисом с согласия родителя или законного представителя, который в этом случае принимает эти условия от его имени.',
           ],
         },
@@ -476,7 +497,7 @@ export const LEGAL_COPY = {
 
     privacy: {
       title:       'Privacy Policy',
-      description: 'What data the Verum products (verum.cam, the messenger at chat.verum.cam and the Android app) process, what end-to-end encryption keeps our server from seeing, where data is stored, your rights and how to delete your account.',
+      description: 'What data the Verum products (verum.cam, the messenger at chat.verum.cam, the Android app and Verum Notes at notes.verum.cam) process, what end-to-end encryption keeps our server from seeing, where data is stored, your rights and how to delete your account.',
       summary: [
         'Messages, voice notes, video notes, files and calls between people are end-to-end encrypted (ECDH P-256, AES-256-GCM): we cannot read them.',
         'We hold your email, your public profile, an encrypted copy of your key, encrypted messages and the metadata needed to deliver them. No phone number needed; no ads and no tracking cookies.',
@@ -526,7 +547,7 @@ export const LEGAL_COPY = {
           id:    'verum-audio-bot',
           title: 'The exception: the Verum Audio bot',
           blocks: [
-            'The official Verum Audio Bot runs on our server, which also holds its key. Messages you send in your chat with the bot are decrypted on the server, only so that the bot can read your link, download the requested audio and send it back to you as an encrypted message. The link is used for nothing else and is not written to logs. To download, the server fetches the link itself or, if that fails, through a separate download service (Cobalt).',
+            'The official Verum Audio Bot runs on our server, which also holds its key. Messages you send in your chat with the bot are decrypted on the server, only so that the bot can read your link, download the requested audio and send it back to you as an encrypted message. The link is used for nothing else and is not written to logs. To download, the server fetches the link itself. If that fails, it may use a separate download service (Cobalt), when we have it switched on.',
             'The bot cannot see your chats with other people. If you don\'t want the server to process your messages, don\'t write to the bot.',
           ],
         },
@@ -545,7 +566,7 @@ export const LEGAL_COPY = {
               'Sessions: for each signed-in device, its IP address, browser and operating system (from the User-Agent header) and last activity time. You can see them under Settings → Sessions; they help you spot a sign-in that was not yours.',
               'Server logs: the IP address, time, address and result of each request and the User-Agent, for security, rate limiting (protection against DDoS attacks and password guessing) and debugging.',
               'Push subscription (if you turn notifications on in a browser): the address your browser\'s push service gives us.',
-              'Website statistics: anonymous, cookie-free statistics of visits and loading speed (Vercel Web Analytics and Speed Insights).',
+              'Statistics in the web messenger (chat.verum.cam): anonymous, cookie-free statistics of visits and loading speed (Vercel Web Analytics and Speed Insights). The verum.cam website and Verum Notes load no statistics scripts.',
             ] },
             'We do not collect phone numbers, your address book, advertising identifiers or your location, except the location you choose to share, which is end-to-end encrypted.',
           ],
@@ -626,15 +647,16 @@ export const LEGAL_COPY = {
             'Verum runs on the infrastructure of these companies. Each processes data only to provide its service:',
             { list: [
               'Vercel Inc.: hosts the verum.cam website, the web app at chat.verum.cam and Verum Notes at notes.verum.cam on its global edge network (including in the EU and the USA). Through verum.cam/r2 and chat.verum.cam/r2 it also relays encrypted files and app updates from files.verum.cam, seeing only ciphertext. Anonymous statistics: see "What data we collect".',
-              'Render Services, Inc.: the API and WebSocket server, api.verum.cam (data centre in Oregon, USA).',
+              'Render Services, Inc.: the API and WebSocket server (data centre in Oregon, USA). The messenger connects to it directly, at e2ee-chat-backend-eeei.onrender.com, and Verum Notes through api.verum.cam.',
               'MongoDB, Inc. (MongoDB Atlas): the database with account data, ciphertext and metadata.',
-              'Cloudflare, Inc.: DNS for verum.cam and its subdomains, CDN, network protection (including against DDoS attacks) and proxying for verum.cam and api.verum.cam; Cloudflare R2 storage for encrypted files and app updates (files.verum.cam); the TURN relay and STUN servers for calls.',
+              'Cloudflare, Inc.: DNS for verum.cam and its subdomains; CDN, proxying and network protection (including against DDoS attacks) for api.verum.cam and files.verum.cam; Cloudflare R2 storage for encrypted files and app updates (files.verum.cam); the TURN relay and STUN servers for calls.',
+              'GitHub, Inc.: hosts the Android app\'s installation file (APK) on the Releases page of github.com/qadamboy-dev/verum-hub, where the button on verum.cam leads; when you download it, GitHub sees your IP address.',
               'Brevo: sends the transactional emails with one-time confirmation codes.',
               'ipapi.co: when you approve a QR sign-in, the new device\'s IP address is looked up to show you its approximate city and country.',
               'Google: public STUN servers for calls when Cloudflare\'s service is unavailable; they see your IP address.',
               'Map providers (OpenFreeMap, CARTO, Esri and, for some map styles, MapTiler): when you open the map of a live location, your device loads map images from them. They see your IP address and the area shown on the map, never your messages.',
               'Your browser\'s push service (for example Google, Mozilla or Apple): delivers notifications in the web app, if you turn them on.',
-              'Cobalt: a download service the Verum Audio bot uses when it cannot download a link itself.',
+              'Cobalt: a download service the Verum Audio bot may use when it cannot download a link itself (only while we have it switched on).',
             ] },
             'So your data is stored and processed outside the country you live in, including outside Uzbekistan: the API server is in the USA, and these companies also process data in other countries, including in the EU.',
             'We do not sell personal data or share it for advertising.',
@@ -656,6 +678,7 @@ export const LEGAL_COPY = {
             { list: [
               'Account data: for as long as the account exists.',
               'Encrypted messages and files: until they are deleted. Deleting a message for everyone erases its encrypted content and file; deleting or clearing a chat for everyone, or the last member leaving it, erases all its messages and files. If storage is unavailable at that moment, the file is deleted on a later retry. For disappearing messages, see "What data we collect"; for account deletion, see "Deleting your account".',
+              'Encrypted files of messages deleted before November 2026, and files that were uploaded but never sent, stay in storage until we clean it up. We cannot read them either.',
               'Verum Notes: a note stays until you delete it for good; then only a mark of the deletion without content remains, and with many deletions the oldest marks are removed. See "Verum Notes".',
               'One-time codes: valid for 10 minutes, then deleted automatically.',
               'Session records: deleted automatically when the session expires.',
@@ -690,7 +713,7 @@ export const LEGAL_COPY = {
               'sign you out on every device;',
               'delete your profile, public key, encrypted private-key copy, password hash, contacts, pinned chats, sessions and notification subscriptions;',
               'delete the files you sent from storage and erase the encrypted content of your messages: only empty placeholders with the time they were sent remain in other people\'s chats;',
-              'remove you from your chats, delete your private chats (they disappear for the other person too) and stop location sharing;',
+              'remove you from your chats, delete your private chats (they disappear for the other person too) and your Saved Messages, and stop location sharing;',
               'delete all your Verum Notes notes and folders, with the marks of deleted ones.',
             ] },
             'Moderation records (for example, that an account was banned) may be kept to prevent abuse, and server logs are deleted when their retention period ends.',
@@ -738,6 +761,7 @@ export const LEGAL_COPY = {
           title: 'The Service and accepting these terms',
           blocks: [
             'Verum is a free, independent ecosystem of private products with end-to-end encryption: the Verum Chat messenger and Verum Notes, encrypted notes and tasks. We may change, suspend or discontinue any part of the Service at any time.',
+            'The Android app is distributed as an APK on the Releases page of github.com/qadamboy-dev/verum-hub. Every version is signed with the same developer key; the SHA-256 of its certificate is c0bf23a6da34e959cd06c9505cdb7abd23539559750e1e1a6b2e151dffc4d0ce. Install the app only from there.',
             'You must be at least 16 years old to use the Service. Where the law of your country allows it, a younger person may use it with the consent of a parent or legal guardian, who then accepts these terms on their behalf.',
           ],
         },
