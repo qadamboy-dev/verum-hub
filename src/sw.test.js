@@ -102,4 +102,26 @@ describe('sw.js — pushes and clicks', () => {
       expect(self.clients.openWindow).toHaveBeenCalledWith('https://chat.verum.cam/');
     }
   });
+
+  test('an address kept in a notification is followed only when it is the messenger\'s own', async () => {
+    const elsewhere = [
+      'https://evil.example/',
+      'https://chat.verum.cam.evil.example/',
+      'https://chat.verum.cam@evil.example/',
+      'http://chat.verum.cam/',
+      '//evil.example/',
+      '/#chat=1',
+      'javascript:alert(1)',
+      { toString: () => 'https://evil.example/' },
+      42,
+    ];
+    for (const url of elsewhere) {
+      const { self, fire } = load();
+      await fire('notificationclick', { notification: { data: { url }, close: vi.fn() } });
+      expect(self.clients.openWindow, String(url)).toHaveBeenCalledWith('https://chat.verum.cam/');
+    }
+    const { self, fire } = load();
+    await fire('notificationclick', { notification: { data: { url: 'https://chat.verum.cam/#chat=c1' }, close: vi.fn() } });
+    expect(self.clients.openWindow).toHaveBeenCalledWith('https://chat.verum.cam/#chat=c1');
+  });
 });

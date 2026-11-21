@@ -76,8 +76,17 @@ self.addEventListener('push', function (event) {
   }));
 });
 
+// A click opens the messenger and nothing else: an address kept in a
+// notification (one the old worker made, say) is followed only when it is
+// the messenger's own.
+function target(data) {
+  if (data.chatId) return chatLink(data.chatId);
+  var url = typeof data.url === 'string' ? data.url : '';
+  return url.indexOf(CHAT_URL) === 0 ? url : CHAT_URL;
+}
+
 self.addEventListener('notificationclick', function (event) {
   event.notification.close();
   var data = event.notification.data || {};
-  event.waitUntil(self.clients.openWindow(data.chatId ? chatLink(data.chatId) : (data.url || CHAT_URL)));
+  event.waitUntil(self.clients.openWindow(target(data)));
 });
