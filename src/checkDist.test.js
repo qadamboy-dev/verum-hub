@@ -17,7 +17,7 @@ function dist(files) {
   const dir = mkdtempSync(path.join(tmpdir(), 'verum-hub-check-'));
   dirs.push(dir);
   const all = {
-    'index.html': page('<a href="/privacy">p</a> <a href="/r2/apk/verum.apk">apk</a> <a href="https://chat.verum.cam/">c</a>'),
+    'index.html': page('<a href="/privacy">p</a> <a href="/r2/ota/manifest.json">ota</a> <a href="https://chat.verum.cam/">c</a> <a href="https://github.com/qadamboy-dev/verum-hub/releases/latest" target="_blank" rel="noopener">android</a>'),
     'privacy.html': page(), 'terms.html': page(), '404.html': page(),
     'hub.js': '', 'assets/s.css': 'body{background:url(/assets/a.png)}', 'assets/a.png': '',
     ...files,
@@ -52,9 +52,21 @@ describe('checkDist', () => {
     ['a missing file', page('<img src="/assets/gone.png">'), /missing file/],
     ['a remote stylesheet', page('', '<link rel="stylesheet" href="https://fonts.example/a.css">'), /stylesheet from another origin/],
     ['an unsafe new tab', page('<a href="https://x.example/" target="_blank">x</a>'), /noopener/],
+    ['a link to a .apk file', page('<a href="/r2/apk/verum.apk">x</a>'), /names a \.apk file/],
+    ['a remote .APK file', page('<a href="https://files.verum.cam/apk/Verum-1.0.7.APK">x</a>'), /names a \.apk file/],
+    ['a .apk named in text', page('<p>Download verum.apk</p>'), /names a \.apk file/],
+    ['the APK media type', page('<a href="https://github.com/x/y/releases/latest" type="application/vnd.android.package-archive">x</a>'), /APK media type/],
   ])('%s is caught', (_, html, problem) => {
     const problems = checkDist(dist({ 'index.html': html }));
     expect(problems.some(p => problem.test(p)), problems.join('\n')).toBe(true);
+  });
+
+  test.each([
+    ['sitemap.xml', '<urlset><url><loc>https://verum.cam/r2/apk/verum.apk</loc></url></urlset>'],
+    ['hub.js', 'location.href = "/r2/apk/verum.apk";'],
+    ['.well-known/security.txt', 'Contact: mailto:support@verum.cam\n# the app: https://files.verum.cam/apk/verum.apk\n'],
+  ])('a .apk named in %s, besides the pages, is caught too', (name, content) => {
+    expect(checkDist(dist({ [name]: content }))).toEqual([`${name}: names a .apk file or the APK media type`]);
   });
 
   test.each([

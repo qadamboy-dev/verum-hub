@@ -31,11 +31,11 @@ export const CHAT_URL  = 'https://chat.verum.cam/';
 export const NOTES_URL = 'https://notes.verum.cam/';
 export const SUPPORT_EMAIL = 'support@verum.cam';
 
-// Where the Android APK is offered. A build sets VITE_ANDROID_APK_URL (an
-// https URL; files.verum.cam is served through this site's /r2 rewrite, as
-// the messenger's Welcome page did); without it the default is the same
-// bucket path through /r2. Upload the APK there, or set the variable.
-export const DEFAULT_APK_PATH = '/r2/apk/verum.apk';
+// Where the Android app is offered: the GitHub releases page, whose latest
+// release carries the APK. The site itself never names a .apk file or the
+// APK media type: scanners flag a page that links one ("contains-apk"), and
+// scripts/checkDist.js fails the build on either.
+export const ANDROID_RELEASES_URL = 'https://github.com/qadamboy-dev/verum-hub/releases/latest';
 
 const SPECS = {
   exchange: 'ECDH P-256 + HKDF-SHA256',

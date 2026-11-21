@@ -4,9 +4,9 @@
  * and that nothing in the markup needs a CSP exception.
  */
 import { describe, test, expect } from 'vitest';
-import { PAGES, renderHead, renderBody, resolveApkUrl, pageForFile } from './pages.js';
+import { PAGES, renderHead, renderBody, pageForFile } from './pages.js';
 import { esc, t, icon } from './html.js';
-import { COPY, LANGS, CHAT_URL, NOTES_URL } from '../content/site.js';
+import { COPY, LANGS, CHAT_URL, NOTES_URL, ANDROID_RELEASES_URL } from '../content/site.js';
 import { LEGAL_COPY, LEGAL_UPDATED } from '../content/legalContent.js';
 import { pageDom, renderPage } from '../test/helpers.js';
 
@@ -55,14 +55,19 @@ describe('the hub (index.html)', () => {
     expect(q('#products')).not.toBeNull();
   });
 
-  test('Verum Chat: live, opens chat.verum.cam, offers the APK', () => {
+  test('Verum Chat: live, opens chat.verum.cam, offers the Android app on its releases page', () => {
     const card = q('[aria-labelledby="chat-title"]');
     expect(card.querySelector('h3').textContent).toBe('Verum Chat');
     expect(card.querySelector('.hub-product-host').textContent).toBe('chat.verum.cam');
     expect(visibleText(document, card.querySelector('.hub-status'))).toBe('Live');
     expect(card.querySelector('[data-product="chat"]').getAttribute('href')).toBe('https://chat.verum.cam/');
-    expect(card.querySelector('[data-product="apk"]').getAttribute('href')).toBe('/r2/apk/verum.apk');
-    expect(visibleText(document, card.querySelector('[data-product="apk"]'))).toBe('Download Android APK');
+    const android = card.querySelector('[data-product="android"]');
+    expect(android.getAttribute('href')).toBe('https://github.com/qadamboy-dev/verum-hub/releases/latest');
+    expect(android.getAttribute('href')).toBe(ANDROID_RELEASES_URL);
+    expect(android.getAttribute('target')).toBe('_blank');
+    expect(android.getAttribute('rel')).toBe('noopener');
+    expect(android.hasAttribute('type')).toBe(false); // no APK media type: it is a page, not a file
+    expect(visibleText(document, android)).toBe('Download Android APK');
     for (const feature of ['calls', 'Video notes', 'Live Locator']) expect(card.textContent).toContain(feature);
   });
 
@@ -107,14 +112,12 @@ describe('the hub (index.html)', () => {
     expect(q('main#main')).not.toBeNull();
   });
 
-  test('a configured APK URL wins; files.verum.cam goes through /r2', () => {
-    expect(resolveApkUrl('https://files.verum.cam/apk/verum-1.0.6.apk')).toBe('/r2/apk/verum-1.0.6.apk');
-    expect(resolveApkUrl('https://downloads.example/verum.apk')).toBe('https://downloads.example/verum.apk');
-    for (const bad of ['', '   ', 'http://files.verum.cam/x.apk', 'javascript:alert(1)', undefined]) {
-      expect(resolveApkUrl(bad)).toBe('/r2/apk/verum.apk');
-    }
-    const { document: d } = pageDom('home', { apkUrl: '/r2/apk/verum-1.0.6.apk' }).window;
-    expect(d.querySelector('[data-product="apk"]').getAttribute('href')).toBe('/r2/apk/verum-1.0.6.apk');
+  // Scanners flag a site that links an APK ("contains-apk"): no page names
+  // a .apk file or the APK media type, in any language
+  test.each(Object.keys(PAGES))('%s names no .apk file and no APK media type', (page) => {
+    const html = renderPage(page);
+    expect(html).not.toMatch(/\.apk/i);
+    expect(html).not.toMatch(/application\/vnd\.android\.package-archive/i);
   });
 });
 

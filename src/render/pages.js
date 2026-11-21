@@ -13,7 +13,7 @@
  */
 import {
   COPY, LANGS, DEFAULT_LANG, LANG_LABEL, SITE_URL, CHAT_URL, NOTES_URL, SUPPORT_EMAIL,
-  DEFAULT_APK_PATH,
+  ANDROID_RELEASES_URL,
 } from '../content/site.js';
 import { DOC_LANG } from '../content/langs.js';
 import { LEGAL_COPY, LEGAL_EMAIL, LEGAL_UPDATED } from '../content/legalContent.js';
@@ -32,23 +32,6 @@ export const OG_IMAGE = `${SITE_URL}/og-cover.png`;
 const PRIVACY_HREF  = '/privacy.html';
 const TERMS_HREF    = '/terms.html';
 const SECURITY_HREF = '/.well-known/security.txt';
-
-/**
- * The APK link: VITE_ANDROID_APK_URL when it is an https URL (one on
- * files.verum.cam goes through this site's /r2 rewrite, which some
- * networks need), otherwise the bucket path through /r2.
- */
-export function resolveApkUrl(configured) {
-  const url = String(configured || '').trim();
-  if (!/^https:\/\/\S+$/i.test(url)) return DEFAULT_APK_PATH;
-  try {
-    const parsed = new URL(url);
-    if (parsed.hostname.toLowerCase() === 'files.verum.cam') return `/r2${parsed.pathname}${parsed.search}`;
-  } catch {
-    return DEFAULT_APK_PATH;
-  }
-  return url;
-}
 
 // ── <head> ───────────────────────────────────────────────────────────────
 
@@ -237,7 +220,7 @@ function hero() {
   </section>`;
 }
 
-function products(apkUrl) {
+function products() {
   return `<section id="products" class="hub-section hub-container" aria-labelledby="products-title">
     <h2 id="products-title" class="hub-section-title">${t(c => c.products.title)}</h2>
     <p class="hub-section-lead">${t(c => c.products.lead)}</p>
@@ -256,7 +239,7 @@ function products(apkUrl) {
         <p class="hub-platforms"><span class="hub-platform-icons">${icon('Globe', { size: 14 })}${icon('Smartphone', { size: 14 })}${icon('Tv', { size: 14 })}</span>${t(c => c.products.chat.platforms)}</p>
         <div class="hub-product-actions">
           <a class="btn-primary hub-product-btn" href="${CHAT_URL}" data-product="chat">${t(c => c.products.chat.open)}${icon('ArrowUpRight', { size: 15 })}</a>
-          <a class="btn-secondary hub-product-btn" href="${esc(apkUrl)}" data-product="apk" type="application/vnd.android.package-archive">${icon('Download', { size: 15 })}${t(c => c.products.chat.apk)}</a>
+          <a class="btn-secondary hub-product-btn" href="${ANDROID_RELEASES_URL}" target="_blank" rel="noopener" data-product="android">${icon('Download', { size: 15 })}${t(c => c.products.chat.apk)}</a>
         </div>
       </article>
       <article class="hub-card hub-product" aria-labelledby="notes-title">
@@ -317,12 +300,12 @@ function security() {
   </section>`;
 }
 
-function homeBody({ apkUrl }) {
+function homeBody() {
   return `${nav()}
 <main id="main" class="hub-main">
   <div class="hub-backdrop" aria-hidden="true"><span class="hub-glow"></span></div>
   ${hero()}
-  ${products(apkUrl)}
+  ${products()}
   ${security()}
 </main>
 ${footer()}`;
@@ -405,21 +388,21 @@ function notFoundBody() {
 ${footer()}`;
 }
 
-export function renderBody(page, { apkUrl = DEFAULT_APK_PATH } = {}) {
-  if (page === 'home') return homeBody({ apkUrl });
+export function renderBody(page) {
+  if (page === 'home') return homeBody();
   if (page === 'privacy' || page === 'terms') return legalBody(page);
   if (page === 'notFound') return notFoundBody();
   throw new Error(`renderBody: no page ${page}`);
 }
 
 /** A template with its <!--hub:head--> and <!--hub:body--> filled in. */
-export function renderInto(template, page, options = {}) {
+export function renderInto(template, page) {
   for (const mark of ['<!--hub:head-->', '<!--hub:body-->']) {
     if (template.split(mark).length !== 2) throw new Error(`renderInto(${page}): expected one ${mark}`);
   }
   return template
     .replace('<!--hub:head-->', () => renderHead(page))
-    .replace('<!--hub:body-->', () => renderBody(page, options));
+    .replace('<!--hub:body-->', () => renderBody(page));
 }
 
 export const pageForFile = (file) => Object.keys(PAGES).find(key => PAGES[key].file === file) || null;

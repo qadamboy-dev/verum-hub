@@ -4,7 +4,7 @@
  */
 import { describe, test, expect } from 'vitest';
 import {
-  COPY, LANGS, DEFAULT_LANG, LANG_STORAGE_KEY, SITE_URL, CHAT_URL, NOTES_URL, SUPPORT_EMAIL, DEFAULT_APK_PATH,
+  COPY, LANGS, DEFAULT_LANG, LANG_STORAGE_KEY, SITE_URL, CHAT_URL, NOTES_URL, SUPPORT_EMAIL, ANDROID_RELEASES_URL,
 } from './site.js';
 import { pickLang, DOC_LANG } from './langs.js';
 
@@ -74,8 +74,9 @@ describe('site.js — URLs', () => {
     expect(SUPPORT_EMAIL).toBe('support@verum.cam');
   });
 
-  test('the APK defaults to the bucket through this site\'s /r2 rewrite', () => {
-    expect(DEFAULT_APK_PATH).toBe('/r2/apk/verum.apk');
+  test('the Android app is offered on the GitHub releases page, never as a .apk link', () => {
+    expect(ANDROID_RELEASES_URL).toBe('https://github.com/qadamboy-dev/verum-hub/releases/latest');
+    expect(ANDROID_RELEASES_URL).not.toMatch(/\.apk/i);
   });
 });
 

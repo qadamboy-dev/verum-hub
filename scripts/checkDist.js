@@ -13,6 +13,11 @@
  *   - a data: or remote url() in CSS (fonts and images must be files).
  * It also checks that every local link and asset exists (or is one of
  * vercel.json's rewrites), and that no link is plain http.
+ *
+ * And that the site names no .apk file and no APK media type, in a page or
+ * any other text it serves: scanners flag a site that links an APK
+ * ("contains-apk"). The Android app is offered on its GitHub releases page
+ * (content/site.js ANDROID_RELEASES_URL).
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -20,6 +25,11 @@ import { JSDOM } from 'jsdom';
 
 // Paths vercel.json answers without a file in dist/
 const REWRITTEN = [/^\/$/, /^\/privacy$/, /^\/terms$/, /^\/r2\/.+/];
+
+const APK_FILE = /\.apk/i;
+const APK_TYPE = /application\/vnd\.android\.package-archive/i;
+// What the site serves as text, besides the pages
+const TEXT_FILE = /\.(js|css|txt|xml|json|webmanifest|svg)$/i;
 
 function listFiles(dir, base = dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -48,6 +58,9 @@ export function checkDist(distDir) {
     const html = fs.readFileSync(path.join(distDir, page), 'utf8');
     const { document } = new JSDOM(html).window;
     const where = (what) => `${page}: ${what}`;
+
+    if (APK_FILE.test(html)) problems.push(where('names a .apk file (link the GitHub releases page instead)'));
+    if (APK_TYPE.test(html)) problems.push(where('the APK media type (application/vnd.android.package-archive)'));
 
     for (const script of document.querySelectorAll('script')) {
       const src = script.getAttribute('src');
@@ -93,6 +106,11 @@ export function checkDist(distDir) {
       }
     }
     if (/@import/.test(text)) problems.push(`${css}: an @import left in the bundle`);
+  }
+
+  for (const name of [...files].filter(f => TEXT_FILE.test(f))) {
+    const text = fs.readFileSync(path.join(distDir, name), 'utf8');
+    if (APK_FILE.test(text) || APK_TYPE.test(text)) problems.push(`${name}: names a .apk file or the APK media type`);
   }
 
   return problems;

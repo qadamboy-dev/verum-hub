@@ -2,7 +2,8 @@
  * A real production build (vite.config.js, into a temporary folder): the
  * pages come out rendered, pass scripts/checkDist.js (the plugin would have
  * failed the build otherwise), ship no JavaScript bundle, and keep public/
- * as it is. VITE_ANDROID_APK_URL reaches the APK button.
+ * as it is. Nothing the site serves names a .apk file, even with an old
+ * VITE_ANDROID_APK_URL still set (the build no longer reads it).
  */
 import { describe, test, expect, afterAll } from 'vitest';
 import { mkdtempSync, rmSync, readFileSync, readdirSync, existsSync } from 'node:fs';
@@ -71,17 +72,43 @@ describe('yarn build', () => {
     expect(out.read('hub.js')).toBe(readFileSync(path.join(ROOT, 'public/hub.js'), 'utf8'));
   });
 
-  test('the built hub links the messenger, Notes, the APK and the documents', () => {
+  test('the built hub links the messenger, Notes, the Android releases page and the documents', () => {
     const d = out.dom('index.html');
     expect(d.querySelector('[data-product="chat"]').getAttribute('href')).toBe('https://chat.verum.cam/');
     expect(d.querySelector('[data-product="notes"]').getAttribute('href')).toBe('https://notes.verum.cam/');
-    expect(d.querySelector('[data-product="apk"]').getAttribute('href')).toBe('/r2/apk/verum.apk');
+    const android = d.querySelector('[data-product="android"]');
+    expect(android.getAttribute('href')).toBe('https://github.com/qadamboy-dev/verum-hub/releases/latest');
+    expect(android.getAttribute('target')).toBe('_blank');
+    expect(android.getAttribute('rel')).toBe('noopener');
     const footer = [...d.querySelectorAll('.hub-footer a')].map(a => a.getAttribute('href'));
     expect(footer).toEqual(expect.arrayContaining(['/privacy.html', '/terms.html', '/.well-known/security.txt', 'mailto:support@verum.cam']));
   });
 
-  test('VITE_ANDROID_APK_URL on files.verum.cam goes through /r2', async () => {
-    const custom = await buildInto({ VITE_ANDROID_APK_URL: 'https://files.verum.cam/apk/verum-1.0.6.apk' });
-    expect(custom.dom('index.html').querySelector('[data-product="apk"]').getAttribute('href')).toBe('/r2/apk/verum-1.0.6.apk');
+  // Scanners flag a site that links an APK ("contains-apk"). An old
+  // VITE_ANDROID_APK_URL left in Vercel's settings must not bring one back.
+  test('nothing the site serves names a .apk file or the APK media type, even with VITE_ANDROID_APK_URL set', async () => {
+    const withOldSetting = await buildInto({ VITE_ANDROID_APK_URL: 'https://files.verum.cam/apk/verum.apk' });
+    for (const build of [out, withOldSetting]) {
+      const texts = listTextFiles(build.outDir);
+      expect(texts).toEqual(expect.arrayContaining(['index.html', 'privacy.html', 'terms.html', '404.html', 'hub.js', 'sitemap.xml']));
+      for (const rel of texts) {
+        const text = build.read(rel);
+        expect(text, rel).not.toMatch(/\.apk/i);
+        expect(text, rel).not.toMatch(/application\/vnd\.android\.package-archive/i);
+      }
+      expect(checkDist(build.outDir)).toEqual([]);
+    }
+    expect(withOldSetting.dom('index.html').querySelector('[data-product="android"]').getAttribute('href'))
+      .toBe('https://github.com/qadamboy-dev/verum-hub/releases/latest');
   }, 180_000);
 });
+
+/** The text files of a dist/: pages, scripts, styles, sitemap, robots, security.txt, SVG. */
+function listTextFiles(dir, base = dir) {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) return listTextFiles(full, base);
+    const rel = path.relative(base, full).split(path.sep).join('/');
+    return /\.(html|js|css|txt|xml|json|webmanifest|svg)$/i.test(rel) ? [rel] : [];
+  });
+}

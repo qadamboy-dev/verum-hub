@@ -12,13 +12,13 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 export const file = (rel) => readFileSync(path.join(ROOT, rel), 'utf8');
 export const json = (rel) => JSON.parse(file(rel));
 
-export function renderPage(page, options) {
-  return renderInto(file(PAGES[page].file), page, options);
+export function renderPage(page) {
+  return renderInto(file(PAGES[page].file), page);
 }
 
 /** The rendered page as a document. `lang` sets <html data-lang>, as public/hub.js would. */
-export function pageDom(page, { lang = 'en', ...options } = {}) {
-  const dom = new JSDOM(renderPage(page, options), { url: 'https://verum.cam/' });
+export function pageDom(page, { lang = 'en' } = {}) {
+  const dom = new JSDOM(renderPage(page), { url: 'https://verum.cam/' });
   dom.window.document.documentElement.setAttribute('data-lang', lang);
   return dom;
 }
