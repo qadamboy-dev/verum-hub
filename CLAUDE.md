@@ -33,6 +33,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - It is built from `../e2ee-chat-frontend/mobile/`. That repo's `CLAUDE.md` (Android shell, Releases) keeps the hashes of every release.
   - A later release goes up the same way: a new tag with the APK attached. The button follows `releases/latest`, so nothing changes here.
   - Checked the same day with plain requests, after the owner fixed the domain's DNSSEC (its DS record now has algorithm 13). verum.cam answered 200, no page in the sitemap names a `.apk`, and the button's link reached the release. `security.txt` answered 200 `text/plain; charset=utf-8`, and `/r2/apk/verum.apk` answered 404.
+- **2026-11-21, the bucket's CORS is done** (it was the owner's first open step). The rule of the backend's `yarn r2:init-cors` is live on the bucket behind `files.verum.cam` and `/r2/`. The owner pasted it into the R2 dashboard, because no R2 keys are kept on this machine. Uploads from chat.verum.cam and from the Android app pass, and other origins get 403. Details are in `../e2ee-chat-backend/CLAUDE.md` (Bucket CORS).
 - `yarn test`: 248 tests in 10 files, the real build included. `yarn build` passes its own dist/ checks. `yarn audit`: 0 vulnerabilities (118 packages, at 2026-11-13; no dependency changed since).
 - Looked at in Chromium under the real headers (a local server that sends vercel.json's CSP), on 2026-11-13 and again on 2026-11-21 after the releases link:
   - no CSP or Trusted Types violation, `hub.js` running, fonts and styles loaded;
@@ -44,9 +45,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - security.txt served as `text/plain`.
 
 **The owner's steps still open** (the domains moved: verum.cam and www here, chat.verum.cam on the messenger's project):
-1. On the backend, `yarn r2:init-cors` against the real bucket, unless it ran already: without it, uploads from chat.verum.cam are refused.
-2. Read the legal documents (below): they were widened for the ecosystem and are not yet approved.
-3. Cloudflare: verum.cam answers from Vercel directly (DNS only). If it is ever proxied, keep features that rewrite HTML off for it (Web Analytics injection, Rocket Loader). The CSP blocks what they inject; the e-mail addresses are already wrapped in `<!--email_off-->`.
+1. Read the legal documents (below): they were widened for the ecosystem and are not yet approved.
+2. Cloudflare: verum.cam answers from Vercel directly (DNS only). If it is ever proxied, keep features that rewrite HTML off for it (Web Analytics injection, Rocket Loader). The CSP blocks what they inject; the e-mail addresses are already wrapped in `<!--email_off-->`.
 
 **What moves with the origin, and what does not:** browsers keep a session, keys, the key ring, App Lock and push per origin. A person who used the messenger on verum.cam signs in again on chat.verum.cam, allows notifications again, and keeps retired keys only on verum.cam's storage (see the messenger's `CLAUDE.md`). Nothing carries that data across yet.
 
