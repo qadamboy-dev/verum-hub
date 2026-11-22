@@ -171,8 +171,16 @@ describe.each(['ru', 'en'])('Privacy Policy (%s)', (lang) => {
   });
 
   test('claims nothing the code does not do', () => {
-    // the password does reach the server at sign-in (bcrypt check)
+    // split-key (backend services/authCompat.js): an account on v2 sends only the
+    // sign-in key; one still on v1, and Android before 1.0.8, still send the
+    // password over HTTPS. The text says both until step 4c of the rollout.
     expect(p).toMatch(/HTTPS/);
+    expect(of('zero-knowledge')).toMatch(/только ключ входа|only the sign-in key/);
+    expect(of('zero-knowledge')).toMatch(/Android до версии 1\.0\.8|Android before version 1\.0\.8/);
+    expect(of('data-we-collect')).toMatch(/bcrypt-хеш ключа входа|bcrypt hash of the sign-in key/);
+    expect(of('data-we-collect')).toMatch(/прежний bcrypt-хеш самого пароля|earlier bcrypt hash of the password itself/);
+    // deletion takes both hashes: an account in transition (S2s) has both
+    expect(of('delete-account')).toMatch(/хеши пароля и ключа входа|hashes of your password and sign-in key/);
     expect(p).not.toMatch(/passwordless|без пароля|never sees your password|не знает (ваш )?пароль/i);
     // there are no avatars, and the server keeps disappearing messages' ciphertext
     expect(p).not.toMatch(/avatar|аватар/i);
@@ -273,6 +281,9 @@ describe.each(['ru', 'en'])('the ecosystem the documents cover (%s)', (lang) => 
     expect(notes).toMatch(/Verum Chat/);
     expect(notes).toMatch(/HTTPS/);
     expect(notes).toMatch(/не меняет ни ваши ключи|never changes your keys/);
+    // split-key: Notes signs in with the sign-in key, and only the messenger moves an account
+    expect(notes).toMatch(/ключ входа|sign-in key/);
+    expect(notes).toMatch(/может только Verum Chat|only Verum Chat can move/);
     // encryption on the device, a key derived from the account's private key
     expect(notes).toContain('AES-256-GCM');
     expect(notes).toContain('HKDF');

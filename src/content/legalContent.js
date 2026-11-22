@@ -15,6 +15,9 @@
  * The owner approved the whole text on 2026-11-21, with that day's audit
  * fixes: the hosts, GitHub, Cobalt, files left in R2, the statistics, Saved
  * Messages, Verum Notes in the description, the APK's channel and key.
+ * On 2026-11-22 the owner approved the transitional text for split-key
+ * sign-in: zero-knowledge (the key copy, the password), data-we-collect
+ * (Password), verum-notes and delete-account.
  *
  * The build renders it into dist/privacy.html and dist/terms.html, both
  * languages in each page, as plain HTML (src/render/legal.js). Both
@@ -28,9 +31,12 @@
  *
  * Every statement must hold for the shipped code (backend and frontend).
  * The ones that are easy to get wrong:
- *  - the password DOES reach the server over HTTPS at sign-in (bcrypt
- *    check); only a hash is stored. Never write "the server never sees
- *    your password" until OPAQUE ships.
+ *  - sign-in is split-key since 2026-11-22 (backend services/authCompat.js):
+ *    an account on v2 sends only a sign-in key derived from the password
+ *    (the server keeps a bcrypt hash of it, with the salt and parameters);
+ *    an account still on v1, and Android before 1.0.8, still send the
+ *    password itself over HTTPS. Keep both halves until step 4c of the
+ *    rollout, and never write "the server never sees your password".
  *  - the encrypted key backup is always on (registration requires it); it is
  *    not optional. 600,000 PBKDF2 iterations since August 2026 (8e8852e);
  *    older copies keep 210,000 until a password change re-wraps them.
@@ -81,7 +87,7 @@
  */
 
 export const LEGAL_EMAIL   = 'support@verum.cam';
-export const LEGAL_UPDATED = '2026-11-21'; // <time datetime>; shown as "November 2026"
+export const LEGAL_UPDATED = '2026-11-22'; // <time datetime>; shown as "November 2026"
 export const LEGAL_DOCS    = ['privacy', 'terms']; // paths: services/route.js
 
 export const LEGAL_COPY = {
@@ -140,8 +146,8 @@ export const LEGAL_COPY = {
           blocks: [
             'В переписке между людьми содержимое текстовых сообщений, голосовых, видеокружков, фото, файлов и обновлений геопозиции шифруется сквозным шифрованием на устройствах собеседников: устройства согласуют ключ по ECDH P-256 и HKDF-SHA-256 и шифруют данные алгоритмом AES-256-GCM. Каждый файл шифруется своим ключом AES-256-GCM, который передаётся только внутри зашифрованного сообщения. Наш сервер лишь передаёт и хранит шифротекст и не может его расшифровать.',
             'Звонки идут напрямую между устройствами по WebRTC и шифруются DTLS-SRTP. Установка звонка (предложение, ответ и сетевые кандидаты, в которых передаются отпечатки DTLS) сама зашифрована сквозным шифрованием — ECDH P-256 и AES-256-GCM, поэтому сервер не может вклиниться в звонок. Если прямое соединение невозможно, звонок идёт через TURN-ретранслятор, который пересылает зашифрованный трафик и прочитать его не может.',
-            'Пара ключей создаётся только на вашем устройстве. Чтобы вы могли войти на новом устройстве, на сервере всегда хранится зашифрованная копия закрытого ключа: перед отправкой устройство шифрует её алгоритмом AES-256-GCM ключом, выведенным из вашего пароля через PBKDF2-HMAC-SHA-256 (600 000 итераций; копии, созданные до августа 2026 года, используют 210 000 итераций, пока вы не смените пароль). Без вашего пароля эту копию не расшифровать.',
-            'У нас нет доступа к вашему закрытому ключу и к содержимому переписки, и мы нигде не храним ваш пароль в читаемом виде. При этом пароль передаётся на наш сервер по защищённому соединению (HTTPS), когда вы входите, — чтобы сверить его с хешем (см. «Какие данные мы собираем»). Разделение пароля входа и ключа шифрования (протокол OPAQUE) — в наших планах.',
+            'Пара ключей создаётся только на вашем устройстве. Чтобы вы могли войти на новом устройстве, на сервере всегда хранится зашифрованная копия закрытого ключа. Из вашего пароля устройство выводит два независимых ключа: сначала через PBKDF2-HMAC-SHA-256 (600 000 итераций, со случайной солью, своей у каждого аккаунта), затем через HKDF-SHA-256 с разными метками. Первый — ключ входа: только его устройство передаёт серверу. Второй шифрует копию закрытого ключа алгоритмом AES-256-GCM и никогда не покидает устройство; из ключа входа его не вычислить. Аккаунт переходит на эту схему при первом входе в обновлённый Verum Chat, а также при смене или сбросе пароля в нём. Смена или сброс пароля в Verum для Android до версии 1.0.8 временно возвращает аккаунт на прежнюю схему, до следующего входа в обновлённый Verum Chat. До этого копия зашифрована ключом, выведенным из пароля напрямую через PBKDF2-HMAC-SHA-256 (600 000 итераций; копии, созданные до августа 2026 года, используют 210 000). Без вашего пароля ни одну из этих копий не расшифровать.',
+            'У нас нет доступа к вашему закрытому ключу и к содержимому переписки, и мы нигде не храним ваш пароль в читаемом виде. Когда вы входите, сервер получает по защищённому соединению (HTTPS) только ключ входа и сверяет его с хешем (см. «Какие данные мы собираем»); сам пароль на сервер не передаётся. Исключения на переходный период: при входе в аккаунт, который ещё не перешёл на новую схему, и при входе из приложения Verum для Android до версии 1.0.8 на сервер, как раньше, передаётся сам пароль, — обновите приложение. Следующий шаг в наших планах — протокол OPAQUE: он вдобавок не даёт подбирать пароль по тому, что сервер видит при входе.',
             'Уведомления содержат только имя отправителя и надпись «🔒 Encrypted message» — никогда не текст сообщения.',
           ],
         },
@@ -160,7 +166,7 @@ export const LEGAL_COPY = {
             'Мы собираем только то, без чего сервис не может работать:',
             { list: [
               'Аккаунт: адрес почты, имя пользователя (username), имя и фамилия, отображаемое имя, описание (если вы его заполнили), отметка верификации, открытый ключ ECDH P-256 и настройки приватности. В рамках этих настроек другие люди видят, в сети ли вы и когда заходили. Почту мы используем только для одноразовых кодов (вход и регистрация, подтверждение важных действий — смены почты или пароля, сброс пароля и удаление аккаунта) и для защиты от злоупотреблений. Рассылок и рекламы мы не отправляем. Другие пользователи видят почту, только если вы разрешили это в настройках приватности (по умолчанию — никто).',
-              'Пароль: мы храним только его хеш (bcrypt) для проверки входа. Сам пароль передаётся на сервер по HTTPS, когда вы входите или меняете его, и нигде не сохраняется и не записывается в журналы.',
+              'Пароль: сам пароль мы не получаем. Для проверки входа храним bcrypt-хеш ключа входа, который ваше устройство выводит из пароля, а также соль и параметры этого вывода (сервер отдаёт их вашему приложению только после кода из письма). Пока аккаунт не перешёл на эту схему, вместо этого хранится прежний bcrypt-хеш самого пароля и прежняя зашифрованная копия ключа; у перешедших аккаунтов они сохраняются, пока работают приложения до версии 1.0.8. В этих случаях пароль передаётся на сервер по HTTPS, когда вы входите или меняете его, и нигде не сохраняется и не записывается в журналы.',
               'Зашифрованная копия закрытого ключа — см. раздел «Нулевое разглашение (Zero-Knowledge)».',
               'Зашифрованное содержимое: шифротекст ваших сообщений (вместе с IV), включая заметки в «Saved Messages», — в базе данных; зашифрованные файлы (фото, голосовые, видеокружки, документы) — как непрозрачные объекты .bin в хранилище Cloudflare R2. Расшифровать их мы не можем.',
               'Исчезающие сообщения: в чате можно включить таймер — 1 минута, 1 час или 1 день. Таймер согласуется внутри зашифрованной переписки, поэтому заранее сервер о нём не знает. Когда время сообщения истекает, оно удаляется с устройств обоих собеседников, а приложение отправителя просит сервер стереть зашифрованную копию и файл. Пока этого не случилось (например, отправитель не в сети; приложение для Android делает это начиная с версии 1.0.6), копия, которую сервер прочитать не может, остаётся на сервере.',
@@ -193,7 +199,7 @@ export const LEGAL_COPY = {
           id:    'verum-notes',
           title: 'Verum Notes',
           blocks: [
-            'Verum Notes (notes.verum.cam) — заметки и задачи на том же аккаунте Verum. Вход такой же, как в Verum Chat: код из письма, затем облачный пароль, который по HTTPS доходит до сервера для проверки. Зашифрованную копию ключей, которую возвращает сервер, этот пароль открывает на вашем устройстве. Verum Notes не меняет ни ваши ключи, ни их копию, ни пароль.',
+            'Verum Notes (notes.verum.cam) — заметки и задачи на том же аккаунте Verum. Вход такой же, как в Verum Chat: код из письма, затем облачный пароль. Из него на вашем устройстве выводятся ключ входа, который проверяет сервер, и ключ, которым там же открывается зашифрованная копия ваших ключей; сам пароль на сервер не уходит. Если аккаунт ещё не перешёл на эту схему, пароль, как раньше, по HTTPS доходит до сервера для проверки и открывает копию ключей на устройстве; перевести аккаунт на новую схему может только Verum Chat. Verum Notes не меняет ни ваши ключи, ни их копию, ни пароль.',
             'Каждая заметка и папка шифруется на вашем устройстве до отправки — AES-256-GCM, ключом, который выводится на устройстве из закрытого ключа аккаунта (HKDF). Название, папка, текст, теги, ссылки и задачи находятся внутри зашифрованных данных, а их размер округляется вверх, так что сервер знает его лишь приблизительно. О каждой заметке и папке сервер хранит:',
             { list: [
               'зашифрованные данные и вектор инициализации;',
@@ -313,7 +319,7 @@ export const LEGAL_COPY = {
             'В приложении откройте настройки → вкладка «Account» → «Delete my account permanently», запросите код подтверждения на почту и введите его. Если приложения под рукой нет, напишите на {email} с адреса почты, привязанного к аккаунту, — и мы удалим аккаунт сами. При удалении мы сразу:',
             { list: [
               'завершаем все ваши сессии на всех устройствах;',
-              'удаляем профиль, открытый ключ, зашифрованную копию закрытого ключа, хеш пароля, контакты, закреплённые чаты, сессии и подписки на уведомления;',
+              'удаляем профиль, открытый ключ, зашифрованные копии закрытого ключа, хеши пароля и ключа входа с солью и параметрами его вывода, контакты, закреплённые чаты, сессии и подписки на уведомления;',
               'удаляем из хранилища файлы, которые вы отправляли, и стираем зашифрованное содержимое ваших сообщений: в чатах собеседников остаются только пустые записи со временем отправки;',
               'убираем вас из чатов, удаляем ваши личные чаты (у собеседника они тоже исчезают) и Saved Messages, останавливаем трансляции геопозиции;',
               'удаляем все ваши заметки и папки Verum Notes вместе с отметками об удалённых.',
@@ -541,8 +547,8 @@ export const LEGAL_COPY = {
           blocks: [
             'Between people, the content of text messages, voice messages, video notes, photos, files and location updates is end-to-end encrypted on the devices in the conversation: the devices agree on a key with ECDH P-256 and HKDF-SHA-256 and encrypt with AES-256-GCM. Each file is encrypted with its own AES-256-GCM key, which travels only inside the encrypted message. Our server only relays and stores ciphertext and cannot decrypt it.',
             'Calls go directly between devices over WebRTC and are encrypted with DTLS-SRTP. Setting up a call (the offer, the answer and the network candidates, which carry the DTLS fingerprints) is itself end-to-end encrypted with ECDH P-256 and AES-256-GCM, so our server cannot step into a call. When a direct connection is not possible, the call goes through a TURN relay, which forwards the encrypted traffic and cannot read it.',
-            'Your key pair is created only on your device. So that you can sign in on a new device, an encrypted copy of your private key is always kept on our server: before uploading it, your device encrypts it with AES-256-GCM under a key derived from your password with PBKDF2-HMAC-SHA-256 (600,000 iterations; copies created before August 2026 use 210,000 until you change your password). Without your password, this copy cannot be decrypted.',
-            'We have no access to your private key or to the content of your conversations, and we never store your password in a readable form. Your password does reach our server over an encrypted connection (HTTPS) when you sign in, to be checked against its hash (see "What data we collect"). Separating the sign-in password from the encryption key (the OPAQUE protocol) is on our roadmap.',
+            'Your key pair is created only on your device. So that you can sign in on a new device, an encrypted copy of your private key is always kept on our server. From your password, your device derives two independent keys: first with PBKDF2-HMAC-SHA-256 (600,000 iterations, with a random salt of your account\'s own), then with HKDF-SHA-256 under different labels. The first is a sign-in key, the only one your device sends to our server. The second encrypts the copy of your private key with AES-256-GCM and never leaves your device; it cannot be computed from the sign-in key. An account moves to this scheme the first time you sign in to an updated Verum Chat, or when you change or reset your password there. A password change or reset in Verum for Android before 1.0.8 temporarily returns the account to the earlier scheme, until your next sign-in to an updated Verum Chat. Until then, its copy is encrypted under a key derived from the password directly with PBKDF2-HMAC-SHA-256 (600,000 iterations; copies created before August 2026 use 210,000). Without your password, neither copy can be decrypted.',
+            'We have no access to your private key or to the content of your conversations, and we never store your password in a readable form. When you sign in, our server receives only the sign-in key, over an encrypted connection (HTTPS), and checks it against its hash (see "What data we collect"); the password itself is not sent. The exceptions during the transition: when you sign in to an account that has not moved to the new scheme yet, or from the Verum app for Android before version 1.0.8, the password itself is still sent, as before, so please update the app. The OPAQUE protocol is the next step on our roadmap: it also stops anyone from guessing the password from what the server sees at sign-in.',
             'Notifications carry only the sender\'s name and "🔒 Encrypted message", never the text.',
           ],
         },
@@ -561,7 +567,7 @@ export const LEGAL_COPY = {
             'We collect only what the service cannot work without:',
             { list: [
               'Account: your email address, username, first and last name, display name, bio (if you add one), verified badge, ECDH P-256 public key and privacy settings. Within those settings, other people see whether you are online and when you were last seen. We use your email only for one-time codes (signing in and signing up, confirming sensitive actions such as changing your email or password, resetting your password, and confirming account deletion) and to limit abuse. We send no newsletters or ads. Other users see your email only if you allow it in Privacy settings (by default, nobody).',
-              'Password: we store only a bcrypt hash of it, to check your sign-in. The password itself reaches our server over HTTPS when you sign in or change it, and is never stored or written to logs.',
+              'Password: we do not receive the password itself. To check your sign-in, we store a bcrypt hash of the sign-in key your device derives from the password, with the salt and parameters of that derivation (the server gives them to your app only after the code from the email). Until your account moves to this scheme, we keep the earlier bcrypt hash of the password itself and the earlier encrypted copy of your key instead; for accounts that have moved, they are kept while app versions before 1.0.8 are in use. In those cases the password reaches our server over HTTPS when you sign in or change it, and is never stored or written to logs.',
               'Encrypted copy of your private key: see "Zero knowledge: how the encryption works".',
               'Encrypted content: the ciphertext of your messages (with its IV), including your notes in Saved Messages, in our database; and encrypted files (photos, voice messages, video notes, documents) as opaque .bin objects in Cloudflare R2 storage. We cannot decrypt either.',
               'Disappearing messages: you can set a timer in a chat: 1 minute, 1 hour or 1 day. The timer is agreed inside the encrypted conversation, so the server doesn\'t know about it in advance. When a message\'s time is up, it is deleted from both people\'s devices, and the sender\'s app asks the server to erase the encrypted copy and the file. Until that happens (for example, while the sender is offline; the Android app does this from version 1.0.6), the copy, which the server cannot read, stays on the server.',
@@ -594,7 +600,7 @@ export const LEGAL_COPY = {
           id:    'verum-notes',
           title: 'Verum Notes',
           blocks: [
-            'Verum Notes (notes.verum.cam) is a notes and tasks app on the same Verum account. You sign in to it as to Verum Chat: a code sent by email, then your cloud password, which reaches the server over HTTPS for the check. The encrypted copy of your keys that the server returns is opened on your device with that password. Verum Notes never changes your keys, their copy or your password.',
+            'Verum Notes (notes.verum.cam) is a notes and tasks app on the same Verum account. You sign in to it as to Verum Chat: a code sent by email, then your cloud password. On your device, the password gives a sign-in key, which the server checks, and a key that opens the encrypted copy of your keys there; the password itself is not sent. If your account has not moved to this scheme yet, the password reaches the server over HTTPS for the check, as before, and opens the copy of your keys on your device; only Verum Chat can move an account to the new scheme. Verum Notes never changes your keys, their copy or your password.',
             'Every note and folder is encrypted on your device before it is sent, with AES-256-GCM, under a key derived on your device from your account\'s private key (HKDF). The title, the folder, the text, tags, links and tasks are inside the encrypted data, and its size is rounded up, so the server learns it only approximately. For each note or folder the server stores:',
             { list: [
               'the encrypted data and its initialisation vector;',
@@ -714,7 +720,7 @@ export const LEGAL_COPY = {
             'In the app, open Settings → the Account tab → Delete my account permanently, request a confirmation code by email and enter it. If you can\'t use the app, write to {email} from the email address of your account, and we will delete the account for you. When an account is deleted, we immediately:',
             { list: [
               'sign you out on every device;',
-              'delete your profile, public key, encrypted private-key copy, password hash, contacts, pinned chats, sessions and notification subscriptions;',
+              'delete your profile, public key, encrypted private-key copies, the hashes of your password and sign-in key with the salt and parameters of its derivation, contacts, pinned chats, sessions and notification subscriptions;',
               'delete the files you sent from storage and erase the encrypted content of your messages: only empty placeholders with the time they were sent remain in other people\'s chats;',
               'remove you from your chats, delete your private chats (they disappear for the other person too) and your Saved Messages, and stop location sharing;',
               'delete all your Verum Notes notes and folders, with the marks of deleted ones.',

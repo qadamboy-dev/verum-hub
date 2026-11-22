@@ -13,8 +13,10 @@
  *  - the Verum Audio bot reads what is sent to it (the one E2EE exception);
  *  - the server holds metadata (email, who talks to whom and when, file
  *    sizes, IP addresses): never "the server knows nothing";
- *  - the password reaches the server at sign-in: never "passwordless" or
- *    "the server never sees your password";
+ *  - sign-in is split-key since 2026-11-22: an account on v2 sends a key
+ *    derived from the password, but accounts still on v1 and Android before
+ *    1.0.8 send the password itself. Never "passwordless" or "the server
+ *    never sees your password";
  *  - the messenger has cookie-free Vercel statistics: say "no ad trackers or
  *    third-party cookies", never "no analytics";
  *  - Verum Notes is open (notes.verum.cam, repo verum-notes): what its card

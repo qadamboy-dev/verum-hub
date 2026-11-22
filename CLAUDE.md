@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | `api.verum.cam` | `../e2ee-chat-backend` | the API; its CORS list pins all of the above (`src/config/origins.js`) |
 | `admin.verum.cam` | `../verum-admin-web` | the staff console |
 
-## Current state (2026-11-21)
+## Current state (2026-11-22)
 
 - **Live.** verum.cam is this repo's Vercel project, and a push to `master` deploys it. On 2026-11-21:
   - `https://verum.cam/` answered `Server: Vercel` with this CSP; the deploy was from 2026-11-18.
@@ -35,6 +35,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - Checked the same day with plain requests, after the owner fixed the domain's DNSSEC (its DS record now has algorithm 13). verum.cam answered 200, no page in the sitemap names a `.apk`, and the button's link reached the release. `security.txt` answered 200 `text/plain; charset=utf-8`, and `/r2/apk/verum.apk` answered 404.
 - **2026-11-21, the bucket's CORS is done** (it was the owner's first open step). The rule of the backend's `yarn r2:init-cors` is live on the bucket behind `files.verum.cam` and `/r2/`. The owner pasted it into the R2 dashboard, because no R2 keys are kept on this machine. Uploads from chat.verum.cam and from the Android app pass, and other origins get 403. Details are in `../e2ee-chat-backend/CLAUDE.md` (Bucket CORS).
 - **2026-11-21, the legal documents are approved** (the owner's open step). The approval followed that day's audit; what it changed is under The legal documents below.
+- **2026-11-22, the split-key transitional text** (step 2a of the backend's split-key rollout, after the backend's `d0648ae` went live). The owner approved it that day with four edits. The Privacy Policy changed in five places:
+  - zero-knowledge, the key copy: PBKDF2 then HKDF into a sign-in key and a backup key, and a change or reset in Android before 1.0.8 that returns an account to the earlier scheme;
+  - zero-knowledge, the password: only the sign-in key is sent, except for accounts still on v1 and Android before 1.0.8;
+  - data-we-collect, Password;
+  - verum-notes;
+  - delete-account: the hashes of the password and the sign-in key.
+
+  `site.js`'s trap note says the same. The final text, without the transition, comes at step 4c, after `yarn auth:drop-legacy --delete`.
 - `yarn test`: 248 tests in 10 files, the real build included. `yarn build` passes its own dist/ checks. `yarn audit`: 0 vulnerabilities (118 packages, at 2026-11-13; no dependency changed since).
 - Looked at in Chromium under the real headers (a local server that sends vercel.json's CSP), on 2026-11-13 and again on 2026-11-21 after the releases link:
   - no CSP or Trusted Types violation, `hub.js` running, fonts and styles loaded;
@@ -84,7 +92,7 @@ yarn test       # vitest: content, pages, vercel.json, public/, hub.js, sw.js, c
   - The statistics are the web messenger's only.
   - Account deletion names Saved Messages, and the Privacy description names Verum Notes.
 
-  `LEGAL_UPDATED` and both sitemaps say 2026-11-21. Everything else is word for word, and `legalContent.test.js` is the messenger's test plus the ecosystem's checks.
+  On 2026-11-22 the owner approved the split-key transitional text (see Current state), and `legalContent.test.js` checks its claims: only the sign-in key, the Android-before-1.0.8 caveat, the sign-in key's bcrypt hash, both hashes on deletion, and Notes signing in with the sign-in key. `LEGAL_UPDATED` and both sitemaps say 2026-11-22. Everything else is word for word, and `legalContent.test.js` is the messenger's test plus the ecosystem's checks.
 - Two copies exist, and since 2026-11-14 they are the same documents: the messenger's `src/pages/legalContent.js` (e2ee-chat-frontend; both last changed together on 2026-11-21) is this file word for word from `LEGAL_EMAIL` on, the Notes section included. Only the `nav` blocks (each page's own navigation strings) differ. Change this copy first, then the messenger's, and in each repo keep `LEGAL_UPDATED` and the sitemap's `lastmod` equal (tested). The messenger's `legalContent.test.js` fails on any other difference whenever this repo is checked out next to it; this repo's tests don't read the messenger's copy. Linking the messenger's legal pages here instead would leave one copy. The Notes section must match `../verum-notes` (its CLAUDE.md) and the backend's `NoteItem`: change it with them.
 - Both languages are in each page (`article.l-doc`); Uzbek reads the Russian one, with a note. Section ids are link targets and must never change: `/privacy#delete-account` is the account-deletion URL in Google Play, `/terms#security` the Policy of security.txt. Only the shown document carries them (`hub.js`); without JS, the English one.
 - Canonical URLs are `https://verum.cam/privacy` and `/terms` (the messenger's, kept); the footer links `/privacy.html` and `/terms.html`, and vercel.json rewrites the short paths to them.
